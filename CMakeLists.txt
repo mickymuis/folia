@@ -1,0 +1,12 @@
+cmake_minimum_required (VERSION 2.6)
+
+project (Folia)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/src/cmake)
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(SDL2 REQUIRED)
+include_directories(${OPENGL_INCLUDE_DIR})
+include_directories(${SDL2_INCLUDE_DIR})
+include_directories(${GLEW_INCLUDE_DIR})
+add_executable(folia src/main.cpp src/core/engine.cpp src/core/world.cpp src/core/object.cpp src/core/camera.cpp src/core/actor.cpp src/core/zone.cpp src/core/window.cpp src/core/light.cpp src/core/geometry.cpp src/actors/solidcube.cpp src/core/sdlapplication.cpp src/core/sdlwindow.cpp src/utils/shaderprogram.cpp)
+target_link_libraries (folia ${OPENGL_LIBRARIES} ${SDL2_LIBRARY} ${GLEW_LIBRARY})
