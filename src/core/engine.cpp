@@ -1,4 +1,4 @@
-#include "../utils/platform.h"
+#include "../common/platform.h"
 #include "engine.h"
 #include "window.h"
 #include "zone.h"
@@ -111,7 +111,7 @@ Engine::draw( Viewport* viewport ) {
 		if( !objs.empty() ) {
 			for( Object::Objects::iterator it =objs.begin();it !=objs.end(); it++ ){
 				obj_stack.push( (*it) );
-				mat_stack.push( modelMat(*it) * matmodel );
+				mat_stack.push( matmodel * modelMat(*it)  );
 			}
 		}
 		
@@ -153,7 +153,7 @@ Engine::preRender( Viewport* v ) {
 glm::mat4 
 Engine::modelMat( Object* obj ) {
 
-	glm::mat4 mat = glm::translate( obj->position() );
+	//glm::mat4 mat = glm::translate( obj->position() );
 	
-	return mat;
+	return obj->transform().matrix();
 }

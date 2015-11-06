@@ -14,7 +14,7 @@ World::~World( ) {
 	delete m_default;
 }
 
-void World::update( uint32_t deltatime, bool onlyCurrent ) {
+void World::update( float deltatime, bool onlyCurrent ) {
 
 	if( onlyCurrent ) {
 		if( m_current )

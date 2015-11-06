@@ -1,4 +1,4 @@
-#include "utils/platform.h"
+#include "common/platform.h"
 #include "core/sdlwindow.h"
 #include "core/sdlapplication.h"
 #include "core/engine.h"
@@ -25,6 +25,7 @@ int main(int argc, char * argv[])
 	//window2.setEngine( &engine );
 	World w;
 	Camera cam;
+	cam.moveLocal( Camera::BACK, 4.0f );
 	Camera cam2;
 	//cam2.setPosition( glm::vec3( 0.0, 4.0, 5.0 ) );
 	window.viewport()->world = &w;
@@ -33,10 +34,16 @@ int main(int argc, char * argv[])
 	//window2.viewport()->camera = &cam2;
 	
 	SolidCube cube( w.currentZone() );
-	SolidCube cube2( w.currentZone() );
+	cube.transform().setScale( 2.5 );
+	SolidCube cube2( &cube );
+	cube2.transform().setScale( 0.7 );
 	SolidCube cube3( &cube2 );
-	cube2.setPosition( glm::vec3( 3.0, 0.0, 0.0 ) );
-	cube3.setPosition( glm::vec3( 3.0, 0.0, 0.0 ) );
+	cube3.transform().setScale( 0.8 );
+	cube.body().setRotationalVelocity( glm::vec3( 0.5, 0.0, 0.0 ) );
+	cube2.transform().setPosition( glm::vec3( 4.0, 0.0, 0.0 ) );
+	cube2.body().setRotationalVelocity( glm::vec3( 0.0, 1.0, 0.0 ) );
+	cube3.transform().setPosition( glm::vec3( 7.0, 0.0, 0.0 ) );
+	cube3.body().setAngularVelocity( glm::vec3( 0.0, 0.0, 2.0 ) );
 	
 	app.run();
 

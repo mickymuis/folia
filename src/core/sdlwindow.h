@@ -11,7 +11,7 @@ public:
 	~SDLWindow();
 
 	void create();
-	void update( uint32_t deltatime );
+	void update( float deltatime );
 
 private:
 	friend class SDLApplication;

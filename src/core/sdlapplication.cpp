@@ -1,10 +1,19 @@
 #include "sdlapplication.h"
-#include "../utils/platform.h"
+#include "../common/platform.h"
 #include "window.h"
 #include <iostream>
 #include <stdio.h>
 
+Applcation*
+Application::instance =0;
+
 SDLApplication::SDLApplication() {
+	if( !Application::instance ) 
+		Application::instance =this;
+	else {
+		std::cerr << "SDLApplication: Multiple Application objects" << std::endl;
+		return;
+	}
 	init();
 }
 
@@ -15,8 +24,17 @@ bool SDLApplication::init() {
         return false;
     }
     
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    char *sbase =SDL_GetBasePath();
+    if( !sbase )
+	    m_baseDir = "./";
+	else {
+		m_baseDir = string( sbase );
+		SDL_Free( sbase );
+	}	
+		
+    
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, REQUIRE_GL_MAJOR_VERSION);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, REQUIRE_GL_MINOR_VERSION);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1 );
 	
@@ -31,8 +49,8 @@ SDLApplication::run() {
     
 	running = true;
 
-	uint32_t lasttime = SDL_GetTicks();
-	uint32_t newtime, deltatime;
+	uint32_t newtime,lasttime = SDL_GetTicks();
+	float deltatime;
 
 	while (running)
 	{

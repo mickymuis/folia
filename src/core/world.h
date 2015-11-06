@@ -13,7 +13,7 @@ class World {
 		
 		typedef std::set<Zone*> Zones;
 		
-		void update( uint32_t deltatime, bool onlyCurrent =true );
+		void update( float deltatime, bool onlyCurrent =true );
 		
 		void addZone( Zone* );
 		void removeZone( Zone* );

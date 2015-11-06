@@ -23,6 +23,7 @@ Object::getChildren( ) const {
 }
 
 void 
-Object::update( uint32_t deltatime ) {
-
+Object::update( float deltatime ) {
+	for( Objects::iterator it =children.begin(); it != children.end(); it++ )
+		(*it)->update( deltatime );
 }

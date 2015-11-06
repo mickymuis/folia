@@ -1,7 +1,7 @@
 #ifndef SOLIDCUBE_H
 #define SOLIDCUBE_H
 
-#include "../utils/platform.h"
+#include "../common/platform.h"
 #include "../utils/shaderprogram.h"
 #include "../core/actor.h"
 #include "../core/geometry.h"

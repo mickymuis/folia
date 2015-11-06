@@ -4,6 +4,7 @@
 #include <set>
 #include <cinttypes>
 #include "../utils/glm/vec3.hpp"
+#include "geometry.h"
 
 class Object {
 	public:
@@ -11,14 +12,14 @@ class Object {
 		~Object();
 	
 		Object* getParent( ) const;
-		virtual void update( uint32_t deltatime );
+		virtual void update( float deltatime );
 		
 		typedef std::set<Object*> Objects;
 		Objects getChildren( ) const;
 		
-		void setPosition( glm::vec3 p ) { m_position = p; }
-		glm::vec3 position() const { return m_position; }
-		
+		void setTransform( const Transformation& t ) { m_transform =t; }
+		Transformation& transform() { return m_transform; }
+			
 		virtual int RTTI() const =0;
 		inline bool isA( int type ) const { return type == RTTI(); }
 	
@@ -27,7 +28,7 @@ class Object {
 		Object* parent;
 	
 	private:
-		glm::vec3 m_position;
+		Transformation m_transform;
 };
 
 #endif

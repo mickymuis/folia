@@ -37,7 +37,7 @@ class Window {
 		int viewportCount() { return 1; } // for now
 		
 		virtual void create() =0;
-		virtual void update( uint32_t deltatime ) =0;
+		virtual void update( float deltatime ) =0;
 		
 		virtual void setEngine( Engine* e ) { engine = e; }
 

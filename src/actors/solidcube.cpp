@@ -85,12 +85,9 @@ SolidCubeGeometry::SolidCubeGeometry() {
 	m_type = GL_TRIANGLES;
 	m_size = 36;
 	
-	if( !m_prog.loadShaderProgram( "../src/shaders/test" ) )
-		std::cerr << m_prog.getErrorMessage() << std::endl;
-	else {
-		std::cout << "Successfully loaded test shader" << std::endl;
-		m_program = m_prog.getProgram();
-	}
+	m_prog.loadShaderProgram( "../src/shaders/test" );
+	m_program = m_prog.getProgram();
+
 	initBuffers();
 }
 

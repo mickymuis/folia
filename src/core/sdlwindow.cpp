@@ -1,7 +1,8 @@
-#include "../utils/platform.h"
+#include "../common/platform.h"
 #include "sdlwindow.h"
 #include "engine.h"
 #include "world.h"
+#include <iostream>
 #include <stdio.h>
 
 SDLWindow::SDLWindow( const char* title ) : Window( title ), hasContext( false ), hasWindow( false )
@@ -20,7 +21,7 @@ SDLWindow::create()
 }
 
 void 
-SDLWindow::update( uint32_t deltatime ) {
+SDLWindow::update( float deltatime ) {
 	if( !engine )
 		return;
 	
