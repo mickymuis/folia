@@ -65,11 +65,6 @@ Engine::draw( Viewport* viewport ) {
 		cam->update();
 	}
 	
-	cam->orbit( 0.01f, 0.01f );
-	//cam->move( Camera::BACK, 0.01 );
-//	cam->rotate( 0.01f, 0 );
-	cam->update();
-	
 	glm::mat4 matprojection = cam->projectionMatrix();
 	glm::mat4 matview = cam->viewMatrix();
 	
@@ -93,14 +88,17 @@ Engine::draw( Viewport* viewport ) {
 			Actor *actor = reinterpret_cast<Actor*>(o);
 			Geometry *g =actor->geometry();
 			
-			GLuint p = g->program();
-			glUseProgram( p );
+			ShaderProgram *program = g->program();
+			if( program ) {
+				GLuint p =program->programHandle();
+				glUseProgram( p );
 			
-			glm::mat4 matmodelview = matview * matmodel;
+				glm::mat4 matmodelview = matview * matmodel;
 			
-			glUniformMatrix4fv(glGetUniformLocation(p, "matmodelview"), 1, GL_FALSE, glm::value_ptr(matmodelview));
+				glUniformMatrix4fv(glGetUniformLocation(p, "matmodelview"), 1, GL_FALSE, glm::value_ptr(matmodelview));
 			
-			glUniformMatrix4fv(glGetUniformLocation(p, "matprojection"), 1, GL_FALSE, glm::value_ptr(matprojection));
+				glUniformMatrix4fv(glGetUniformLocation(p, "matprojection"), 1, GL_FALSE, glm::value_ptr(matprojection));
+			}
 			
 			glBindVertexArray( g->vao() );
 			glDrawArrays( g->type(), g->first(), g->size() );

@@ -2,6 +2,7 @@
 #define GEOMETRY_H
 
 #include "../common/platform.h"
+#include "../utils/shaderprogram.h"
 #include "../utils/glm/fwd.hpp"
 #include "../utils/glm/mat4x4.hpp"
 #include "../utils/glm/vec3.hpp"
@@ -48,14 +49,14 @@ class Geometry {
 		~Geometry() {}
 		
 		virtual GLuint vao() const { return m_vao; }
-		virtual GLuint program() const { return m_program; }
+		virtual ShaderProgram* program() const { return m_program; }
 		virtual GLenum type() const { return m_type; }
 		virtual GLint first() const { return 0; }
 		virtual GLsizei size() const { return m_size; } 
 		
 	protected:
 		GLuint m_vao;
-		GLuint m_program;
+		ShaderProgram* m_program;
 		GLenum m_type;
 		GLsizei m_size;
 };

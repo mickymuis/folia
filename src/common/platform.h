@@ -2,6 +2,7 @@
 #define REQUIRE_GL_MINOR_VERSION 3
 
 #define PATH_SEPARATOR "/"
+#define SHADER_DIR_NAME "shaders"
 
 #define GLEW_STATIC
 #define _USE_MATH_DEFINES

@@ -1,4 +1,5 @@
 #!/bin/sh
 mkdir build
 cd build
+ln -s ../src/shaders .
 cmake .. && echo "Now type 'cd build' and 'make'"

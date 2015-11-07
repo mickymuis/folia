@@ -1,31 +1,51 @@
 #ifndef SHADERPROGRAM_H
 #define SHADERPROGRAM_H
 
-#include "shader.h"
+#include "shadersource.h"
 #include <string>
-
+#include <map>
 
 class ShaderProgram {
 	public:	
+		
 		ShaderProgram();
 		~ShaderProgram();
 		
-		void attachShader( Shader* );
+		void deleteProgram();
 		
-		bool link();
-		
-		GLuint handle() const { return m_handle; }
+		GLuint programHandle() const { return handle; }
 
-		const std::string& errorMessage() const { return m_errormsg; }
-		bool hasError() const { return m_error; }
+		bool isReady() const { return ready; }
+		
+		std::string uniqueIdentifier() const { return permutation; }
+
+
+	protected:
+		friend class ShaderSource;
+		
+		GLuint handle;
+		std::string permutation;
+		bool ready;
+};
+
+class ShaderProgramCache {
+	public:
+		static void initialize();
+		static void cleanup();
+		
+		static ShaderProgram* get( const ShaderSource& );
+		static ShaderProgram* get( const std::string& );
+		static void append( ShaderProgram* );
+		
 
 	private:
-
-		GLuint m_handle;
-		std::string m_errormsg;
-		bool m_error;
-
+		ShaderProgramCache();
+		~ShaderProgramCache();
+		static ShaderProgramCache* instance;
 		
+		typedef std::map<std::string, ShaderProgram*> CacheMap;
+		CacheMap cache;
+	
 };
 
 #endif

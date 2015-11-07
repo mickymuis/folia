@@ -1,42 +1,61 @@
 #include "../common/platform.h"
 #include "shaderprogram.h"
-#include <fstream>
 
-bool ShaderProgram::loadShaderProgram(const std::string & name)
-{
-	GLint result, size = 0;
-	const size_t infosize = 2048;
-	GLchar info[infosize];
+/* ShaderProgram implementation */
 
-	this->name = name;
-
-	if (!loadShader(name + "_vs.c", vs, GL_VERTEX_SHADER))
-		return false;
-	if (!loadShader(name + "_fs.c", fs, GL_FRAGMENT_SHADER))
-		return false;
-
-	p = glCreateProgram();
-	glAttachShader(p, vs);
-	glAttachShader(p, fs);
-	
-	//glBindAttribLocation( p, 0, "in_position" );
-	//glBindAttribLocation( p, 1, "in_normal" );
-	
-	glLinkProgram(p);
-
-	glGetProgramiv(p, GL_LINK_STATUS, &result);
-	if (!result)
-	{
-		glGetProgramInfoLog(p, infosize, &size, info);
-		errormsg = "Shader linking error (" + name + "): " + std::string(info, size);
-		return false;
+ShaderProgram::ShaderProgram() {}
+ShaderProgram::~ShaderProgram() {
+	deleteProgram();
+}
+		
+void 
+ShaderProgram::deleteProgram() {
+	if( ready ) {
+		glDeleteProgram( handle );
+		ready =false;
 	}
-
-	return true;
 }
 
+/* ShaderProgramCache implementation */
 
-const std::string & ShaderProgram::getErrorMessage() const
-{
-	return errormsg;
+void 
+ShaderProgramCache::initialize() {
+	if( !instance )
+		instance =new ShaderProgramCache;
 }
+
+void 
+ShaderProgramCache::cleanup() {
+	if( instance ) {
+		CacheMap::iterator it;
+		for( it = instance->cache.begin(); it != instance->cache.end(); it++ ) {
+			delete it->second;
+		}
+		delete instance;
+	}
+}
+		
+ShaderProgram* 
+ShaderProgramCache::get( const ShaderSource& src ) {
+	return get( src.uniqueIdentifier() );
+}
+
+ShaderProgram* 
+ShaderProgramCache::get( const std::string& permutation ) {
+	initialize();
+	CacheMap::iterator it;
+	it =instance->cache.find( permutation );
+	if( it != instance->cache.end() )
+		return it->second;
+	return 0;
+}
+
+void 
+ShaderProgramCache::append( ShaderProgram* prog ) {
+	initialize();
+	instance->cache[prog->uniqueIdentifier()] = prog;
+}
+		
+ShaderProgramCache* ShaderProgramCache::instance =0;
+ShaderProgramCache::ShaderProgramCache() {}
+ShaderProgramCache::~ShaderProgramCache() {}

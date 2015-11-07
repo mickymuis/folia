@@ -6,6 +6,7 @@
 class SDLApplication: public Application {
 	public:
 		SDLApplication();
+		~SDLApplication();
 	
 		bool run();
 		std::string resourceDir() const { return m_baseDir; }

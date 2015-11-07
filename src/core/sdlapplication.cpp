@@ -1,10 +1,11 @@
 #include "sdlapplication.h"
 #include "../common/platform.h"
+#include "../utils/shaderprogram.h"
 #include "window.h"
 #include <iostream>
 #include <stdio.h>
 
-Applcation*
+Application*
 Application::instance =0;
 
 SDLApplication::SDLApplication() {
@@ -15,6 +16,11 @@ SDLApplication::SDLApplication() {
 		return;
 	}
 	init();
+	ShaderProgramCache::initialize();
+}
+
+SDLApplication::~SDLApplication() {
+	ShaderProgramCache::cleanup();
 }
 
 bool SDLApplication::init() {
@@ -28,8 +34,8 @@ bool SDLApplication::init() {
     if( !sbase )
 	    m_baseDir = "./";
 	else {
-		m_baseDir = string( sbase );
-		SDL_Free( sbase );
+		m_baseDir = std::string( sbase );
+		SDL_free( sbase );
 	}	
 		
     

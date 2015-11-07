@@ -15,8 +15,8 @@ out vec3 normal;
 void main() {
 
 	mat4 mvp = (matprojection * matmodelview);
-	position =in_position;
-	normal =in_normal;
+	position =vec3(matmodelview * vec4(in_position.x,in_position.y, in_position.z, 1.0));
+	normal =mat3(matmodelview) * in_normal;
 	
 	gl_Position = mvp * vec4(in_position.x,in_position.y, in_position.z, 1.0);
 

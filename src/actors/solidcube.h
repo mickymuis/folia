@@ -2,7 +2,6 @@
 #define SOLIDCUBE_H
 
 #include "../common/platform.h"
-#include "../utils/shaderprogram.h"
 #include "../core/actor.h"
 #include "../core/geometry.h"
 
@@ -17,7 +16,6 @@ class SolidCubeGeometry : public Geometry {
 		
 		GLuint vbo_position;
 		GLuint vbo_normal;
-		ShaderProgram m_prog;
 	
 };
 

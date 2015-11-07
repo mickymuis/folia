@@ -1,4 +1,5 @@
 #include "solidcube.h"
+#include "../utils/shaderprogram.h"
 
 /* SolidCubeGeometry implementation */
 
@@ -85,8 +86,10 @@ SolidCubeGeometry::SolidCubeGeometry() {
 	m_type = GL_TRIANGLES;
 	m_size = 36;
 	
-	m_prog.loadShaderProgram( "../src/shaders/test" );
-	m_program = m_prog.getProgram();
+	ShaderSource src;
+	src.addSource( VERTEX_SHADER, "test" );
+	src.addSource( FRAGMENT_SHADER, "test" );
+	m_program = src.createProgram();
 
 	initBuffers();
 }
@@ -99,7 +102,7 @@ SolidCubeGeometry::~SolidCubeGeometry() {
 void 
 SolidCubeGeometry::initBuffers() {
 
-	glUseProgram( m_program );
+	//glUseProgram( m_program );
 	
 	glGenVertexArrays(1, &m_vao);
 	glBindVertexArray(m_vao);
