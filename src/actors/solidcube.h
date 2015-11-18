@@ -16,7 +16,6 @@ class SolidCubeGeometry : public Geometry {
 		
 		GLuint vbo_position;
 		GLuint vbo_normal;
-	
 };
 
 class SolidCube : public Actor {
