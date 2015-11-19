@@ -7,23 +7,33 @@
 #include "../utils/glm/vec3.hpp"
 #include <vector>
 
-enum TendrilVectorAttribute {
-	TENDRIL_BASE =0,
-	TENDRIL_SHOULDER =1,
-	TENDRIL_HEAD =2,
-	TENDRIL_COLOR =3,
-	TENDRIL_COLOR2 =4,
-	TENDRIL_PARAMS =5
-};
 
-enum TendrilFloatAttribute {
-	TENDRIL_BASE_X,			TENDRIL_BASE_Y,				TENDRIL_BASE_Z,
-	TENDRIL_SHOULDER_X,	TENDRIL_SHOULDER_Y,		TENDRIL_SOULDER_Z,
-	TENDRIL_HEAD_X,			TENDRIL_HEAD_Y,				TENDRIL_HEAD_Z,
-	TENDRIL_COLOR_R,		TENDRIL_COLOR_G,			TENDRIL_COLOR_B,
-	TENDRIL_COLOR2_R,		TENDRIL_COLOR2_G,			TENDRIL_COLOR2_B,
-	TENDRIL_THICKNESS,	TENDRIL_CURL,					TENDRIL_PARAM,
-	TENDRIL_NUM_FLOATS
+class Tendril {
+	public:
+		enum Attrib {
+			BASE,
+			COLOR,
+			SHOULDER,
+			COLOR2,
+			HEAD,
+			PARAMS
+		};
+
+		enum AttribElement {
+			BASE_X,			BASE_Y,				BASE_Z,
+			COLOR_R,		COLOR_G,			COLOR_B,
+			SHOULDER_X,	SHOULDER_Y,		SOULDER_Z,
+			COLOR2_R,		COLOR2_G,			COLOR2_B,
+			HEAD_X,			HEAD_Y,				HEAD_Z,
+			THICKNESS,	CURL,					PARAM,
+			NUM_FLOATS
+		};
+
+		void setAttrib( Attrib, glm::vec3 );
+		void setAttrib( AttribElement, float );
+		glm::vec3 attribVector( Attrib ) const;
+		
+		GLfloat data[NUM_FLOATS];
 };
 
 class TendrilGeometry : public Geometry {
@@ -31,12 +41,16 @@ class TendrilGeometry : public Geometry {
 		TendrilGeometry();
 		~TendrilGeometry();
 		
-		int append( int num =1 );
+		size_t append( int num =1 );
+		size_t append( const Tendril& );
 		
-		void setAttribute( int index, TendrilAttribute, glm::vec3 );
+		void setDataAt( int index, const Tendril& );
+		Tendril& dataAt( int index );
+		
 		void updateBuffers();
 		
-		int tendrilCount();
+		size_t tendrilCount() const;
+		virtual GLsizei size() const { return tendrilCount() * 3; } 
 		
 	private:
 		void initBuffers();
@@ -45,7 +59,7 @@ class TendrilGeometry : public Geometry {
 		GLuint vbo_position;
 		GLuint vbo_param;
 		
-		vector<GLfloat> data;
+		std::vector<Tendril> data;
 };
 
 class TendrilField : public Actor {

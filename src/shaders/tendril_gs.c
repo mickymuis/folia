@@ -14,7 +14,7 @@ uniform mat4 matmodelview;
 uniform mat4 matprojection;
  
 in VS_OUT {
-    vec3 normal;
+    vec3 param;
 } gs_in[3];
  
 out GS_OUT {
@@ -111,12 +111,19 @@ main()
   vec3 shoulder =gl_in[1].gl_Position.xyz;
   vec3 head =gl_in[2].gl_Position.xyz;
   
-  up = normalize(base - head);
+  vec3 color =gs_in[0].param.xyz;
+  vec3 color2 =gs_in[1].param.xyz;
   
+  /* param.x - Tendril::THICKNESS 
+  	 param.y - Tendril::CURL 
+  	 param.z - Tendril:: */
+  vec3 param =gs_in[2].param.xyz;
+  
+  up = normalize(base - head);  
   
   /* Determine radius based on overall size */
   
-  RADIUS = length( base - head ) * 0.02;
+  RADIUS = param.x;//length( base - head ) * 0.02;
   
   /* Determine LOD based on perspective */
   
