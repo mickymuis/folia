@@ -6,7 +6,7 @@
 #include "core/zone.h"
 #include "core/camera.h"
 #include "actors/solidcube.h"
-#include "actors/tendril.h"
+#include "actors/tendrilfield.h"
 #include "utils/glm/vec3.hpp"
 
 
@@ -47,7 +47,7 @@ int main(int argc, char * argv[])
 	cube3.transform().setPosition( glm::vec3( 7.0, 0.0, 0.0 ) );
 	cube3.body().setAngularVelocity( glm::vec3( 0.0, 0.0, 2.0 ) );*/
 	
-	Tendril tendril ( w.currentZone() );
+	TendrilField tendril ( w.currentZone() );
 //	tendril.transform().setScale( 0.1 );
 	//tendril.transform().translate( glm::vec3( 0.0, -3.0, 0.0 ) );
 	tendril.body().setRotationalVelocity( glm::vec3( 0.0, 1.0, 0.0 ) );

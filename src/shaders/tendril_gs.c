@@ -1,11 +1,10 @@
 #version 330 core
 
-#define RING_SECTIONS 6.0
-#define RADIUS 0.05
-#define PI 3.141592653589793238462643383279
-#define T_STEP 0.2
-#define T_MAX 14.0
-#define T_BEGIN 1
+float RING_SECTIONS = 6.0;
+float RADIUS = 0.05;
+float T_STEP = 0.15;
+float T_MAX = 24.0;
+float T_BEGIN = 0;
 
 layout(triangles) in;
 layout (triangle_strip, max_vertices=1024) out;
@@ -47,16 +46,19 @@ emitAndMult( vec3 v, vec3 n ) {
 	EmitVertex();
 }
 
-mat4 mat_ring;
+mat4 MAT_RING;
+vec4 RING_LAST;
 
 void 
-emitRing( vec3 pivot1, vec3 pivot2 ) {
+emitRing( vec3 pivot1, vec3 pivot2, float taper ) {
 
-	mat4 mat_ring2 =rotationMatrix( pivot1-pivot2, radians( 360 / RING_SECTIONS ) );
+	mat4 mat_ring2 =rotationMatrix( pivot2-pivot1, radians( 360 / RING_SECTIONS ) );
 	
 	vec4 v1,v2;
 	
-	v1 = v2 = vec4( normalize( cross( pivot1, pivot2 ) ) * RADIUS, 1 );
+	v1 = RING_LAST;
+	v2 = vec4( normalize( cross( pivot2-pivot1, vec3(0.1,0.1,0.1) ) ) * RADIUS / taper, 1 );
+	RING_LAST =v2;
 
 	for( int i =0; i < RING_SECTIONS + 1; i++ ) {
 
@@ -64,13 +66,13 @@ emitRing( vec3 pivot1, vec3 pivot2 ) {
 		
 		emitAndMult ( v2.xyz + pivot2, v2.xyz);
 		
-		v2 = mat_ring * v2;
-		v1 = mat_ring2 * v1;
+		v2 = mat_ring2 * v2;
+		v1 = MAT_RING * v1;
 		
 	}
 	EndPrimitive();
 	
-	mat_ring =mat_ring2;
+	MAT_RING =mat_ring2;
 }
 
 // It calculates a point in the bezier curve at the
@@ -84,15 +86,26 @@ bezier2(
 {
   return  pow( 1.0-t, 2 ) * c1 + 2*(1.0-t)*t*c2 + pow( t, 2 ) * c3;
 }
+
+vec3 bezier3( float t, const vec3 v0, const vec3 v1, const vec3 v2, const vec3 v3 )
+{
+    vec3 p;
+    float OneMinusT = 1.0 - t;
+    float b0 = OneMinusT*OneMinusT*OneMinusT;
+    float b1 = 3.0*t*OneMinusT*OneMinusT;
+    float b2 = 3.0*t*t*OneMinusT;
+    float b3 = t*t*t;
+    return b0*v0 + b1*v1 + b2*v2 + b3*v3;
+}
  
 void 
 main()
 {
-  for(int i = 0; i < gl_in.length(); i++)
+  /*for(int i = 0; i < gl_in.length(); i++)
   {  
     emitAndMult( gl_in[i].gl_Position.xyz, gs_in[i].normal );
   }
-  EndPrimitive();
+  EndPrimitive();*/
   
   vec3 base =gl_in[0].gl_Position.xyz;
   vec3 shoulder =gl_in[1].gl_Position.xyz;
@@ -100,43 +113,45 @@ main()
   
   up = normalize(base - head);
   
-/*  emitRing( base, shoulder );
-  EndPrimitive();
   
-  emitRing( shoulder, head );
-  EndPrimitive();*/
+  /* Determine radius based on overall size */
   
+  RADIUS = length( base - head ) * 0.02;
+  
+  /* Determine LOD based on perspective */
+  
+  float lod = (matprojection * matmodelview * vec4(( base + shoulder + head ) / 3, 1)).w;
+    
   float t;
   vec3 v1, v2;
   
   /* Curve section */
   
-  mat_ring =rotationMatrix( up, radians( 360 / RING_SECTIONS ) );
+  MAT_RING =rotationMatrix( up, radians( 360 / RING_SECTIONS ) );
   
-  //v1 =vec3( sin(T_STEP)/T_STEP, cos(T_STEP)/T_STEP, 0 );
-  v1 =bezier2( 0, base, shoulder, head );
+  RING_LAST.xyz = v2 = base;
   
-  ///for( t =T_STEP*2; t < T_MAX; t+=T_STEP ) {
-  for( t =0.1; t <= 1.0 ; t+=0.1 ) {
+  for( t =0; t <= 1.0 ; t+=0.05 ) {
   
-  	v2 = v1;
-  	//v1 = vec3( sin(t)/t, cos(t)/t, 0 );
-  	v1 = bezier2( t, base, shoulder, head );
-  	emitRing( v1, v2 );
+  	v1 = v2;
+  	//v2 = bezier3( t, base, shoulder, shoulder + vec3(0.05, 0.05, 0.05), head );
+  	v2 = bezier2( t, base, shoulder, head );
+  	emitRing( v1, v2, 1 );
   	
   }
   
   /* Curl section */
   
-  vec3 curve_end =v1;
+  vec3 curve_end =v2;
   
   up = normalize(v2 - v1);
-  mat_ring =rotationMatrix( up, radians( 360 / RING_SECTIONS ) );
   
-  v1 =vec3( sin(T_BEGIN)/T_BEGIN, cos(T_BEGIN)/T_BEGIN, 0 );
-  v2 =vec3( sin(T_BEGIN+T_STEP)/(T_BEGIN+T_STEP), cos(T_BEGIN+T_STEP)/(T_BEGIN+T_STEP), 0 );
+  v1 =vec3( sin(T_BEGIN), cos(T_BEGIN), 1 );
+  v2 =vec3( sin(T_BEGIN+T_STEP)/(T_BEGIN+T_STEP+1), cos(T_BEGIN+T_STEP)/(T_BEGIN+T_STEP+1), 1 );
   
-  vec3 curl_up =normalize( v1 - v2);
+  vec3 curl_up =normalize(
+  	v2-v1
+	);
   
   //float theta = acos(dot( up, vec3( 0,1,0 ) ));
   //vec3 axis =cross( up, vec3( 0,1,0 ) );
@@ -153,20 +168,17 @@ main()
   								
   mat3 rot = I + vx + vx * vx * ((1-c)/pow(s,2));
   
-//  mat4 rot =rotationMatrix( axis, -theta ); 
-  
-  
 
   vec3 offset =curve_end - rot * v1;
    
-  emitRing( (rot*vec3(v2)).xyz + offset, curve_end );
+  emitRing( curve_end, (rot*vec3(v2)).xyz + offset, 1 );
   
-  for( t =T_BEGIN+T_STEP; t < T_MAX; t+=T_STEP ) {
+  for( t =T_BEGIN+T_STEP*2; t < T_MAX; t+=2*T_STEP ) {
   
-  	v2 = v1;
-  	v1 = vec3( sin(t)/t, cos(t)/t, 0 ); 
+  	v1 = v2;
+  	v2 = vec3( sin(t)/(t+1), cos(t)/(t+1), 1 ); 
 
-  	emitRing( (rot*vec3(v1)).xyz + offset, (rot*vec3(v2)).xyz + offset );
+  	emitRing( (rot*vec3(v1)).xyz + offset, (rot*vec3(v2)).xyz + offset, 1 + pow(t,2) / T_MAX );
   	
   }
   
