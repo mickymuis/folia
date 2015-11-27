@@ -107,13 +107,7 @@ vec3 bezier3( float t, const vec3 v0, const vec3 v1, const vec3 v2, const vec3 v
  
 void 
 main()
-{
-  /*for(int i = 0; i < gl_in.length(); i++)
-  {  
-    emitAndMult( gl_in[i].gl_Position.xyz, gs_in[i].normal );
-  }
-  EndPrimitive();*/
-  
+{  
   vec3 base =gl_in[0].gl_Position.xyz;
   vec3 shoulder =gl_in[1].gl_Position.xyz;
   vec3 head =gl_in[2].gl_Position.xyz;
@@ -139,21 +133,24 @@ main()
   
   /* Determine LOD based on perspective */
   
-  float lod = (matprojection * matmodelview * vec4(( base + shoulder + head ) / 3, 1)).w;
+  //float lod = (matprojection * matmodelview * vec4(( base + shoulder + head ) / 3, 1)).w;
     
   float t, taper = 1.0 / GROWTH;
   vec3 v1, v2;
   
+ 
   /* Curve section */
   
   MAT_RING =rotationMatrix( up, radians( 360 / RING_SECTIONS ) );
   
   RING_LAST.xyz = v2 = base;
   
+  
+  
   for( t =0; t <= 1.0; t+=0.10 ) {
   
   	v1 = v2;
-  	//v2 = bezier3( t, base, shoulder, shoulder + vec3(0.05, 0.05, 0.05), head );
+  
   	v2 = bezier2( t * GROWTH, base, shoulder, head );
   	emitRing( v1, v2, taper );
   	
@@ -208,4 +205,5 @@ main()
   }
    
   EndPrimitive();
+  
 }

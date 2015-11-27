@@ -38,7 +38,7 @@ int main(int argc, char * argv[])
 	//window2.viewport()->world = &w;
 	//window2.viewport()->camera = &cam2;
 	
-	//SolidCube cube( w.currentZone() );
+	SolidCube cube( w.currentZone() );
 	/*cube.transform().setScale( 2.5 );
 	SolidCube cube2( &cube );
 	cube2.transform().setScale( 0.7 );

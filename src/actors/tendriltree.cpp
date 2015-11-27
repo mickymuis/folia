@@ -15,7 +15,7 @@ TendrilTree::TendrilTree( Object* parent ) : Actor( parent ) {
 	t.setAttrib( Tendril::CURL, 0.0 );
 	t.setAttrib( Tendril::SHOULDER, glm::vec3( 0.0, 7.5, 0.1 ) );
 	t.setAttrib( Tendril::HEAD, glm::vec3( 0.0, 15.0, 0.0 ) );
-	//t.setAttrib( Tendril::GROWTH, 0.0 );
+	t.setAttrib( Tendril::GROWTH, 1.0 );
 	
 	geom.append( t );
 	
@@ -105,8 +105,6 @@ TendrilTree::update( float deltatime ) {
 		Tendril &t = geom.dataAt(i);
 
 		float g = t.data[Tendril::GROWTH];
-		
-		printf( "%f\n" , g );
 		
 		if( g < 1.0 ) {
 			t.setAttrib( Tendril::GROWTH, g + 1.0 * deltatime );

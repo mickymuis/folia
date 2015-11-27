@@ -114,8 +114,8 @@ ShaderSource::postfix( ShaderType t ) {
 			return "_tcs.c";
 		case TESS_EVALUATION_SHADER:
 			return "_tes.c";
-		case COMPUTE_SHADER:
-			return "_cs.c";	
+/*		case COMPUTE_SHADER:
+			return "_cs.c";	*/
 	}
 	return "";
 }
