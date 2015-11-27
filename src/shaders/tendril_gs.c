@@ -1,13 +1,18 @@
 #version 330 core
 
-float RING_SECTIONS = 6.0;
-float RADIUS = 0.05;
-float T_STEP = 0.15;
-float T_MAX = 24.0;
+float RING_SECTIONS;
+float RADIUS;
+float T_STEP = 0.1;
+float T_MAX = 20.0;
 float T_BEGIN = 0;
+float CURL;
+float GROWTH;
+float STEP;
+float TAPER;
+vec3 COLOR;
 
 layout(triangles) in;
-layout (triangle_strip, max_vertices=1024) out;
+layout (triangle_strip, max_vertices=512) out;
 
 /* Engine default uniforms */
 uniform mat4 matmodelview;
@@ -19,6 +24,7 @@ in VS_OUT {
  
 out GS_OUT {
     vec3 normal;
+    vec3 color;
 } gs_out;
 
 vec3 up = vec3( 0, 1, 0 );
@@ -41,6 +47,7 @@ void
 emitAndMult( vec3 v, vec3 n ) {
 
 	gs_out.normal =mat3(matmodelview) * n;
+	gs_out.color =COLOR;
 	
 	gl_Position =matprojection * matmodelview * vec4(v.x,v.y, v.z, 1.0);
 	EmitVertex();
@@ -111,25 +118,30 @@ main()
   vec3 shoulder =gl_in[1].gl_Position.xyz;
   vec3 head =gl_in[2].gl_Position.xyz;
   
-  vec3 color =gs_in[0].param.xyz;
-  vec3 color2 =gs_in[1].param.xyz;
+  COLOR =gs_in[0].param.xyz;
   
-  /* param.x - Tendril::THICKNESS 
-  	 param.y - Tendril::CURL 
-  	 param.z - Tendril:: */
-  vec3 param =gs_in[2].param.xyz;
-  
+  /* param.x - Tendril::SECTIONS 
+  	 param.y - Tendril::TAPER 
+  	 param.z - Tendril::STEP */
+  	 
+  RING_SECTIONS = gs_in[1].param.x;
+  TAPER = gs_in[1].param.y;
+  STEP = gs_in[1].param.z;
+    
   up = normalize(base - head);  
-  
-  /* Determine radius based on overall size */
-  
-  RADIUS = param.x;//length( base - head ) * 0.02;
+   
+  /* param2.x - Tendril::THICKNESS 
+  	 param2.y - Tendril::CURL 
+  	 param2.z - Tendril::GROWTH */
+  RADIUS = gs_in[2].param.x;
+  CURL = clamp( gs_in[2].param.y, 0.0, 1.0);
+  GROWTH = clamp( gs_in[2].param.z, 0.0, 1.0);
   
   /* Determine LOD based on perspective */
   
   float lod = (matprojection * matmodelview * vec4(( base + shoulder + head ) / 3, 1)).w;
     
-  float t;
+  float t, taper = 1.0 / GROWTH;
   vec3 v1, v2;
   
   /* Curve section */
@@ -138,12 +150,14 @@ main()
   
   RING_LAST.xyz = v2 = base;
   
-  for( t =0; t <= 1.0 ; t+=0.05 ) {
+  for( t =0; t <= 1.0; t+=0.10 ) {
   
   	v1 = v2;
   	//v2 = bezier3( t, base, shoulder, shoulder + vec3(0.05, 0.05, 0.05), head );
-  	v2 = bezier2( t, base, shoulder, head );
-  	emitRing( v1, v2, 1 );
+  	v2 = bezier2( t * GROWTH, base, shoulder, head );
+  	emitRing( v1, v2, taper );
+  	
+  	taper += 0.03 + 0.5 *  t * ( 1.0 - CURL * 0.8 );
   	
   }
   
@@ -178,16 +192,20 @@ main()
 
   vec3 offset =curve_end - rot * v1;
    
-  emitRing( curve_end, (rot*vec3(v2)).xyz + offset, 1 );
+  //emitRing( curve_end, (rot*vec3(v2)).xyz + offset, 1 );
+  v2 = v1;
   
-  for( t =T_BEGIN+T_STEP*2; t < T_MAX; t+=2*T_STEP ) {
+  for( t =T_BEGIN+T_STEP; t < T_MAX * CURL; t+=T_STEP ) {
   
   	v1 = v2;
   	v2 = vec3( sin(t)/(t+1), cos(t)/(t+1), 1 ); 
+  	taper += t / (T_MAX * CURL);
 
-  	emitRing( (rot*vec3(v1)).xyz + offset, (rot*vec3(v2)).xyz + offset, 1 + pow(t,2) / T_MAX );
+  	emitRing( (rot*vec3(v1)).xyz + offset, (rot*vec3(v2)).xyz + offset, taper ); 
+  	
+  	T_STEP = T_STEP + 0.05; 	
   	
   }
-  
+   
   EndPrimitive();
 }

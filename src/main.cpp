@@ -7,6 +7,7 @@
 #include "core/camera.h"
 #include "actors/solidcube.h"
 #include "actors/tendrilfield.h"
+#include "actors/tendriltree.h"
 #include "utils/glm/vec3.hpp"
 
 
@@ -26,8 +27,10 @@ int main(int argc, char * argv[])
 	//window2.setEngine( &engine );
 	World w;
 	Camera cam;
-	cam.setPosition( glm::vec3(0,0,3));
-	cam.moveLocal( Camera::BACK, 4.0f );
+	cam.setPosition( glm::vec3(0,1,1));
+	cam.setTarget( glm::vec3(0,0.5,0));
+	cam.moveLocal( Camera::BACK, 25.0f );
+	
 	Camera cam2;
 	//cam2.setPosition( glm::vec3( 0.0, 4.0, 5.0 ) );
 	window.viewport()->world = &w;
@@ -35,8 +38,8 @@ int main(int argc, char * argv[])
 	//window2.viewport()->world = &w;
 	//window2.viewport()->camera = &cam2;
 	
-	/*SolidCube cube( w.currentZone() );
-	cube.transform().setScale( 2.5 );
+	//SolidCube cube( w.currentZone() );
+	/*cube.transform().setScale( 2.5 );
 	SolidCube cube2( &cube );
 	cube2.transform().setScale( 0.7 );
 	SolidCube cube3( &cube2 );
@@ -47,10 +50,10 @@ int main(int argc, char * argv[])
 	cube3.transform().setPosition( glm::vec3( 7.0, 0.0, 0.0 ) );
 	cube3.body().setAngularVelocity( glm::vec3( 0.0, 0.0, 2.0 ) );*/
 	
-	TendrilField tendril ( w.currentZone() );
+	TendrilTree tendril ( w.currentZone() );
 //	tendril.transform().setScale( 0.1 );
 	//tendril.transform().translate( glm::vec3( 0.0, -3.0, 0.0 ) );
-	tendril.body().setRotationalVelocity( glm::vec3( 0.0, 1.0, 0.0 ) );
+	tendril.body().setRotationalVelocity( glm::vec3( 0.0, 0.5, 0.0 ) );
 	app.run();
 
 	return 0;

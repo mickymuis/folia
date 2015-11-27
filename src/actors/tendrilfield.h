@@ -14,18 +14,18 @@ class Tendril {
 			BASE,
 			COLOR,
 			SHOULDER,
-			COLOR2,
+			PARAMS,
 			HEAD,
-			PARAMS
+			PARAMS2
 		};
 
 		enum AttribElement {
 			BASE_X,			BASE_Y,				BASE_Z,
 			COLOR_R,		COLOR_G,			COLOR_B,
 			SHOULDER_X,	SHOULDER_Y,		SOULDER_Z,
-			COLOR2_R,		COLOR2_G,			COLOR2_B,
+			SECTIONS,		TAPER,				STEP,
 			HEAD_X,			HEAD_Y,				HEAD_Z,
-			THICKNESS,	CURL,					PARAM,
+			THICKNESS,	CURL,					GROWTH,
 			NUM_FLOATS
 		};
 
@@ -34,6 +34,8 @@ class Tendril {
 		glm::vec3 attribVector( Attrib ) const;
 		
 		GLfloat data[NUM_FLOATS];
+		
+		Tendril();
 };
 
 class TendrilGeometry : public Geometry {
@@ -67,6 +69,8 @@ class TendrilField : public Actor {
 		TendrilField( Object* parent );
 		~TendrilField();
 		Geometry* geometry();
+		
+		virtual void update( float deltatime );
 		
 	private:
 		TendrilGeometry geom;

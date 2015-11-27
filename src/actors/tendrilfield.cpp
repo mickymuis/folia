@@ -1,6 +1,17 @@
 #include "tendrilfield.h"
 #include "../utils/shaderprogram.h"
 #include "../common/shaderlayout.h"
+#include "../utils/glm/gtc/random.hpp"
+
+GLfloat TENDRIL_DEFAULT[] {
+
+	0.0, 0.0, 0.0, 	// base
+	0.0, 0.5, 0.0,  // color 1
+	0.0, 3.0, 0.0,  // shoulder
+	4.0, 1.0, 0.1,  // sections, taper, step
+	0.0, 4.0, 0.0,  // head
+	0.05, 1.0, 1.0	// thickness, curl, growth
+};
 
 /* Tendril */
 
@@ -25,6 +36,10 @@ Tendril::attribVector( Attrib a ) const {
 	);	
 }
 
+Tendril::Tendril() {
+	memcpy( data, TENDRIL_DEFAULT, NUM_FLOATS * sizeof( GLfloat ) );
+}
+
 /* TendrilGeometry implementation */
 
 TendrilGeometry::TendrilGeometry() {
@@ -34,8 +49,8 @@ TendrilGeometry::TendrilGeometry() {
 	src.addSource( VERTEX_SHADER, "tendril" );
 	src.addSource( GEOMETRY_SHADER, "tendril" );
 	src.addSource( FRAGMENT_SHADER, "tendril" );
-/*	src.addSource( VERTEX_SHADER, "test" );
-	src.addSource( FRAGMENT_SHADER, "test" );*/
+//	src.addSource( VERTEX_SHADER, "test" );
+//	src.addSource( FRAGMENT_SHADER, "test" );
 	
 	m_program = src.createProgram();
 
@@ -136,14 +151,27 @@ TendrilGeometry::destroyBuffers() {
 
 TendrilField::TendrilField( Object* parent ) : Actor( parent ) {
 
-	Tendril t;
+	geom.append(100);
 	
-	t.setAttrib( Tendril::BASE, glm::vec3( 0,0,0) ); // Base
-	t.setAttrib( Tendril::SHOULDER, glm::vec3( -1,3,0) ); // Shoulder
-	t.setAttrib( Tendril::HEAD, glm::vec3( 1,4,0.0) ); // Head
-	t.setAttrib( Tendril::THICKNESS, 0.05 ); // Head
+	for( int i =0; i < 100; i++ ) {
 	
-	geom.append( t );
+		Tendril &t = geom.dataAt(i);
+		
+		float x = glm::linearRand(-10, 10);
+		float z = glm::linearRand(-10, 10);
+		float k = glm::linearRand(-1, 1);
+		float h = glm::linearRand(0, 3);
+		
+		t.setAttrib( Tendril::BASE, glm::vec3( x,0,z) ); // Base
+		t.setAttrib( Tendril::SHOULDER, glm::vec3( x-k,3+h,z) ); // Shoulder
+		t.setAttrib( Tendril::HEAD, glm::vec3( x+k,4+h,z) ); // Head
+		t.setAttrib( Tendril::THICKNESS, 0.15 * (h/3) );
+
+		t.setAttrib( Tendril::CURL, 0 );
+		t.setAttrib( Tendril::GROWTH, glm::linearRand(-1, 0) );
+	}
+	
+	
 	//geom.append( t );
 
 	
@@ -157,4 +185,27 @@ Geometry*
 TendrilField::geometry() {
 	return &geom;
 }
-	
+
+void 
+TendrilField::update( float deltatime ) {
+	for( int i =0; i < 100; i++ ) {
+
+		Tendril &t = geom.dataAt(i);
+
+		float g = t.data[Tendril::GROWTH];
+		
+		if( g < 1.0 )
+			t.setAttrib( Tendril::GROWTH, g + 0.2 * deltatime );
+		else {
+			g = t.data[Tendril::CURL];
+			t.setAttrib( Tendril::CURL, g + 0.1 * deltatime );
+		}
+	}
+
+
+	//geom.append( t );
+
+
+	geom.updateBuffers();
+	Actor::update( deltatime );
+}
