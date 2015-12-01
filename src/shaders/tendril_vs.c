@@ -5,8 +5,9 @@ layout(location = 0) in vec3 in_position;
 layout(location = 6) in vec3 in_param;
 
 /* Engine default uniforms */
-uniform mat4 matmodelview;
-uniform mat4 matprojection;
+uniform mat4 mat_model;
+uniform mat4 mat_view;
+uniform mat4 mat_projection;
 
 out VS_OUT {
 	vec3 param;

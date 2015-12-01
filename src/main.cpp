@@ -5,6 +5,7 @@
 #include "core/world.h"
 #include "core/zone.h"
 #include "core/camera.h"
+#include "core/light.h"
 #include "actors/solidcube.h"
 #include "actors/tendrilfield.h"
 #include "actors/tendriltree.h"
@@ -39,7 +40,7 @@ int main(int argc, char * argv[])
 	//window2.viewport()->camera = &cam2;
 	
 	SolidCube cube( w.currentZone() );
-	/*cube.transform().setScale( 2.5 );
+	cube.transform().setScale( 2.5 );
 	SolidCube cube2( &cube );
 	cube2.transform().setScale( 0.7 );
 	SolidCube cube3( &cube2 );
@@ -48,12 +49,27 @@ int main(int argc, char * argv[])
 	cube2.transform().setPosition( glm::vec3( 4.0, 0.0, 0.0 ) );
 	cube2.body().setRotationalVelocity( glm::vec3( 0.0, 1.0, 0.0 ) );
 	cube3.transform().setPosition( glm::vec3( 7.0, 0.0, 0.0 ) );
-	cube3.body().setAngularVelocity( glm::vec3( 0.0, 0.0, 2.0 ) );*/
+	cube3.body().setAngularVelocity( glm::vec3( 0.0, 0.0, 2.0 ) );
 	
 	TendrilTree tendril ( w.currentZone() );
-//	tendril.transform().setScale( 0.1 );
-	//tendril.transform().translate( glm::vec3( 0.0, -3.0, 0.0 ) );
-	tendril.body().setRotationalVelocity( glm::vec3( 0.0, 0.5, 0.0 ) );
+/*	TendrilTree tendril2 ( w.currentZone() );
+	TendrilTree tendril3 ( w.currentZone() );
+
+	tendril2.transform().translate( glm::vec3( -6.0, 0.0, -4.0 ) );
+	tendril3.transform().translate( glm::vec3( 6.0, 0.0, -4.0 ) );
+	tendril.body().setRotationalVelocity( glm::vec3( 0.0, 0.5, 0.0 ) );*/
+	
+	
+	Light light0( w.currentZone() );
+	light0.setIntensity( glm::vec3( 0.8 ) );
+	light0.transform().setPosition( glm::vec3( 0, 5, 0 ) );
+	w.currentZone()->addLight( &light0 );
+	
+	Light light1( w.currentZone() );
+	light1.setIntensity( glm::vec3( 0,0.2,0.3 ) );
+	light1.transform().setPosition( glm::vec3( 0, 0, 5 ) );
+	w.currentZone()->addLight( &light1 );
+	
 	app.run();
 
 	return 0;

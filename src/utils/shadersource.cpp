@@ -81,9 +81,9 @@ ShaderSource::createProgram( bool noCache ) {
 		}
 	}
 	
-	printf( "Linked new program with identifier: \n\t`%s'\n", permutation.c_str() );
-
+	
 	if( !error ) {
+		printf( "Linked new program with identifier: \n\t`%s'\n", permutation.c_str() );
 		program =new ShaderProgram();
 		program->handle =handle;
 		program->ready =true;

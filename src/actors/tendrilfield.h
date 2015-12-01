@@ -53,6 +53,7 @@ class TendrilGeometry : public Geometry {
 		
 		size_t tendrilCount() const;
 		virtual GLsizei size() const { return tendrilCount() * 3; } 
+		virtual bool renderDeferred() const { return true; }
 		
 	private:
 		void initBuffers();

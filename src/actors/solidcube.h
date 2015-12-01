@@ -10,6 +10,8 @@ class SolidCubeGeometry : public Geometry {
 		SolidCubeGeometry();
 		~SolidCubeGeometry();
 		
+		virtual bool renderDeferred() const { return true; }
+		
 	private:
 		void initBuffers();
 		void destroyBuffers();

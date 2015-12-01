@@ -53,12 +53,17 @@ class Geometry {
 		virtual GLenum type() const { return m_type; }
 		virtual GLint first() const { return 0; }
 		virtual GLsizei size() const { return m_size; } 
+		virtual bool renderDeferred() const { return false; }
 		
 	protected:
 		GLuint m_vao;
 		ShaderProgram* m_program;
 		GLenum m_type;
 		GLsizei m_size;
+};
+
+class SolidGeometry : public Geometry {
+	public:
 };
 
 #endif

@@ -15,8 +15,9 @@ layout(triangles) in;
 layout (triangle_strip, max_vertices=512) out;
 
 /* Engine default uniforms */
-uniform mat4 matmodelview;
-uniform mat4 matprojection;
+uniform mat4 mat_model;
+uniform mat4 mat_view;
+uniform mat4 mat_projection;
  
 in VS_OUT {
     vec3 param;
@@ -46,10 +47,10 @@ mat4 rotationMatrix(vec3 axis, float angle)
 void 
 emitAndMult( vec3 v, vec3 n ) {
 
-	gs_out.normal =mat3(matmodelview) * n;
+	gs_out.normal =mat3(mat_model) * n;
 	gs_out.color =COLOR;
 	
-	gl_Position =matprojection * matmodelview * vec4(v.x,v.y, v.z, 1.0);
+	gl_Position =mat_projection * mat_view * mat_model * vec4(v.x,v.y, v.z, 1.0);
 	EmitVertex();
 }
 

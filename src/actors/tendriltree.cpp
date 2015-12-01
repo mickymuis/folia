@@ -20,6 +20,7 @@ TendrilTree::TendrilTree( Object* parent ) : Actor( parent ) {
 	geom.append( t );
 	
 	recursiveSubtree( t, 1, 3, 10 );
+	
 	geom.updateBuffers();
 }
 
@@ -74,8 +75,8 @@ TendrilTree::recursiveSubtree( Tendril& root, int depth, int maxDepth, int facto
 		tendril.setAttrib( Tendril::BASE, base );
 		tendril.setAttrib( Tendril::SHOULDER, base + offset * variation );
 		tendril.setAttrib( Tendril::HEAD, base + offset * glm::vec3(2) );
-		tendril.setAttrib( Tendril::THICKNESS, root.data[Tendril::THICKNESS] * 1.2 * (1.0f - t) );
-		//tendril.setAttrib( Tendril::GROWTH, 0.0 );
+		tendril.setAttrib( Tendril::THICKNESS, root.data[Tendril::THICKNESS] * 1.7 * (1.0f - t) );
+		tendril.setAttrib( Tendril::GROWTH, 1.0 );
 		
 		if( !first )
 			first =geom.append( tendril );
@@ -93,14 +94,14 @@ TendrilTree::recursiveSubtree( Tendril& root, int depth, int maxDepth, int facto
 	
 	for( int i =0; i < factor; i++ ) {
 	
-		Tendril tendril = geom.dataAt(i);
+		Tendril tendril = geom.dataAt(first+i);
 		recursiveSubtree( tendril, depth+1, maxDepth, factor );
 	}
 }
 
 void 
 TendrilTree::update( float deltatime ) {
-	for( int i =0; i < geom.tendrilCount(); i++ ) {
+/*	for( int i =0; i < geom.tendrilCount(); i++ ) {
 
 		Tendril &t = geom.dataAt(i);
 
@@ -112,7 +113,7 @@ TendrilTree::update( float deltatime ) {
 		}
 	}
 
-	geom.updateBuffers();
+	geom.updateBuffers();*/
 	Actor::update( deltatime );
 }
 
