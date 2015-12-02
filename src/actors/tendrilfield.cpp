@@ -8,7 +8,7 @@ GLfloat TENDRIL_DEFAULT[] {
 	0.0, 0.0, 0.0, 	// base
 	0.0, 0.5, 0.0,  // color 1
 	0.0, 3.0, 0.0,  // shoulder
-	4.0, 1.0, 0.1,  // sections, taper, step
+	3.0, 1.0, 0.1,  // sections, taper, step
 	0.0, 4.0, 0.0,  // head
 	0.05, 1.0, 1.0	// thickness, curl, growth
 };
@@ -167,7 +167,7 @@ TendrilField::TendrilField( Object* parent ) : Actor( parent ) {
 		t.setAttrib( Tendril::HEAD, glm::vec3( x+k,4+h,z) ); // Head
 		t.setAttrib( Tendril::THICKNESS, 0.15 * (h/3) );
 
-		t.setAttrib( Tendril::CURL, 0 );
+		t.setAttrib( Tendril::CURL, 1 );
 		t.setAttrib( Tendril::GROWTH, glm::linearRand(-1, 0) );
 	}
 	

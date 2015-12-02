@@ -1,18 +1,18 @@
 #version 330 core
 
-float RING_SECTIONS;
-float RADIUS;
+float RING_SECTIONS = 6.0;
+float RADIUS = 0.2;
 float T_STEP = 0.1;
 float T_MAX = 20.0;
 float T_BEGIN = 0;
-float CURL;
-float GROWTH;
-float STEP;
-float TAPER;
-vec3 COLOR;
+float CURL = 1.0;
+float GROWTH = 1.0;
+float STEP =0.2;
+float TAPER =1.0;
+vec3 COLOR =vec3(0,1,0);
 
 layout(triangles) in;
-layout (triangle_strip, max_vertices=512) out;
+layout (triangle_strip, max_vertices=146) out;
 
 /* Engine default uniforms */
 uniform mat4 mat_model;
@@ -25,7 +25,6 @@ in VS_OUT {
  
 out GS_OUT {
     vec3 normal;
-    vec3 color;
 } gs_out;
 
 vec3 up = vec3( 0, 1, 0 );
@@ -46,11 +45,11 @@ mat4 rotationMatrix(vec3 axis, float angle)
 
 void 
 emitAndMult( vec3 v, vec3 n ) {
-
-	gs_out.normal =mat3(mat_model) * n;
-	gs_out.color =COLOR;
 	
+//	gs_out.color =COLOR;
+  gs_out.normal =mat3(mat_model) * n;
 	gl_Position =mat_projection * mat_view * mat_model * vec4(v.x,v.y, v.z, 1.0);
+	
 	EmitVertex();
 }
 
@@ -68,7 +67,7 @@ emitRing( vec3 pivot1, vec3 pivot2, float taper ) {
 	v2 = vec4( normalize( cross( pivot2-pivot1, vec3(0.1,0.1,0.1) ) ) * RADIUS / taper, 1 );
 	RING_LAST =v2;
 
-	for( int i =0; i < RING_SECTIONS + 1; i++ ) {
+	for( int i =0; i < RING_SECTIONS +1; i++ ) {
 
 		emitAndMult ( v1.xyz + pivot1 , v1.xyz );
 		
@@ -119,7 +118,7 @@ main()
   	 param.y - Tendril::TAPER 
   	 param.z - Tendril::STEP */
   	 
-  RING_SECTIONS = gs_in[1].param.x;
+  RING_SECTIONS = 6.0;//gs_in[1].param.x;
   TAPER = gs_in[1].param.y;
   STEP = gs_in[1].param.z;
     
@@ -137,18 +136,16 @@ main()
   //float lod = (matprojection * matmodelview * vec4(( base + shoulder + head ) / 3, 1)).w;
     
   float t, taper = 1.0 / GROWTH;
-  vec3 v1, v2;
+  vec3 v1 =vec3(0), v2;
   
  
   /* Curve section */
   
-  MAT_RING =rotationMatrix( up, radians( 360 / RING_SECTIONS ) );
-  
-  RING_LAST.xyz = v2 = base;
-  
-  
-  
-  for( t =0; t <= 1.0; t+=0.10 ) {
+  MAT_RING =rotationMatrix( shoulder-base, radians( 360 / RING_SECTIONS ) );
+  v2 = base;
+  RING_LAST = vec4( normalize( cross( shoulder-base, vec3(0.1,0.1,0.1) ) ) * RADIUS / taper, 1 );
+    
+  for( t =STEP; t <= 1.0; t+= STEP) {
   
   	v1 = v2;
   
@@ -158,6 +155,8 @@ main()
   	taper += 0.03 + 0.5 *  t * ( 1.0 - CURL * 0.8 );
   	
   }
+  
+  EndPrimitive();
   
   /* Curl section */
   
@@ -172,8 +171,7 @@ main()
   	v2-v1
 	);
   
-  //float theta = acos(dot( up, vec3( 0,1,0 ) ));
-  //vec3 axis =cross( up, vec3( 0,1,0 ) );
+   //vec3 axis =cross( up, vec3( 0,1,0 ) );
   //vec3 axis =up-vec3(0,1,0);
   
   vec3 v = cross( up, curl_up );
@@ -201,7 +199,7 @@ main()
 
   	emitRing( (rot*vec3(v1)).xyz + offset, (rot*vec3(v2)).xyz + offset, taper ); 
   	
-  	T_STEP = T_STEP + 0.05; 	
+  	T_STEP = T_STEP + 0.08; 	
   	
   }
    

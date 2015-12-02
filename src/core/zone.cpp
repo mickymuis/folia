@@ -1,4 +1,5 @@
 #include "zone.h"
+#include <algorithm>
 
 Zone::Zone( World* world ) : w(0) {
 	if( world )

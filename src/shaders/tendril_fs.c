@@ -2,7 +2,7 @@
 
 in GS_OUT {
     vec3 normal;
-    vec3 color;
+  //  vec3 color;
 } fs_in;
 
 /* Engine default fragment pass output */
@@ -22,6 +22,7 @@ void main() {
 	fragcolor = vec4(intensity*light*fs_in.color, 1.0);*/
 	
 	normal_out =normalize(fs_in.normal);
-	diffuse_spec_out =vec4( fs_in.color, 0.2 );
+//	diffuse_spec_out =vec4( fs_in.color, 0.2 );
+  diffuse_spec_out =vec4( 0.0, 1.0, 0.0, 0.2 );
 	
 }

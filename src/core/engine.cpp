@@ -199,7 +199,7 @@ Engine::draw( Viewport* viewport ) {
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
-	//renderQueue( m_queue, matview, matprojection, FORWARD_ONLY );
+	renderQueue( m_queue, matview, matprojection, FORWARD_ONLY );
 
 }
 

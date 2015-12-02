@@ -66,6 +66,7 @@ ShaderSource::createProgram( bool noCache ) {
 		{
 			glGetProgramInfoLog( handle, infosize, &size, info );
 			m_errormsg = "Shader linking error (" + permutation + "): " + std::string(info, size);
+			printf( "%s\n", m_errormsg.c_str() );
 			error =true;
 		}
 	}
