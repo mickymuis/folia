@@ -9,6 +9,7 @@
 #include "actors/solidcube.h"
 #include "actors/tendrilfield.h"
 #include "actors/tendriltree.h"
+#include "actors/ptree.h"
 #include "utils/glm/vec3.hpp"
 
 
@@ -52,15 +53,18 @@ int main(int argc, char * argv[])
 	cube3.transform().setPosition( glm::vec3( 7.0, 0.0, 0.0 ) );
 	cube3.body().setAngularVelocity( glm::vec3( 0.0, 0.0, 2.0 ) );*/
 	
-	TendrilTree tendril ( w.currentZone() );
+/*	TendrilTree tendril ( w.currentZone() );
 	tendril.transform().setPosition( glm::vec3( 0, 0, 0 ) );
-/*	TendrilTree tendril2 ( w.currentZone() );
+	TendrilTree tendril2 ( w.currentZone() );
 	TendrilTree tendril3 ( w.currentZone() );
 
 	tendril2.transform().translate( glm::vec3( -6.0, 0.0, -4.0 ) );
 	tendril3.transform().translate( glm::vec3( 6.0, 0.0, -4.0 ) );
 	tendril.body().setRotationalVelocity( glm::vec3( 0.0, 0.5, 0.0 ) );*/
 	
+	PTree tree ( w.currentZone() );
+	tree.transform().setPosition( glm::vec3( 0, 0, 0 ) );
+	tree.body().setRotationalVelocity( glm::vec3( 0.0, 0.5, 0.0 ) );
 	
 	Light light0( w.currentZone() );
 	light0.setIntensity( glm::vec3( 0.8 ) );

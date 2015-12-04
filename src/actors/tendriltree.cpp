@@ -19,7 +19,7 @@ TendrilTree::TendrilTree( Object* parent ) : Actor( parent ) {
 	
 	geom.append( t );
 	
-	recursiveSubtree( t, 1, 3, 10 );
+	recursiveSubtree( t, 1, 4, 18 );
 	
 	geom.updateBuffers();
 }
@@ -42,7 +42,7 @@ TendrilTree::recursiveSubtree( Tendril& root, int depth, int maxDepth, int facto
 	int first =0;
 	glm::vec3 base = root.attribVector( Tendril::HEAD );
 
-	for( int i =0; i < factor; i++ ) {
+	for( int i =0; i < factor / depth; i++ ) {
 	
 		Tendril tendril;
 			
@@ -75,7 +75,7 @@ TendrilTree::recursiveSubtree( Tendril& root, int depth, int maxDepth, int facto
 		tendril.setAttrib( Tendril::BASE, base );
 		tendril.setAttrib( Tendril::SHOULDER, base + offset * variation );
 		tendril.setAttrib( Tendril::HEAD, base + offset * glm::vec3(2) );
-		tendril.setAttrib( Tendril::THICKNESS, root.data[Tendril::THICKNESS] * 1.7 * (1.0f - t) );
+		tendril.setAttrib( Tendril::THICKNESS, root.data[Tendril::THICKNESS] * 1.5 * (1.0f - t) );
 		tendril.setAttrib( Tendril::GROWTH, 1.0 );
 		
 		if( !first )
@@ -83,7 +83,7 @@ TendrilTree::recursiveSubtree( Tendril& root, int depth, int maxDepth, int facto
 		else
 			geom.append( tendril );
 		
-		t = glm::linearRand(0.7f, 0.9f);
+		t = glm::linearRand(0.6f, 0.9f);
 		base = bezier2( 
 			t,
 			root.attribVector( Tendril::BASE ),
@@ -92,7 +92,7 @@ TendrilTree::recursiveSubtree( Tendril& root, int depth, int maxDepth, int facto
 		
 	}
 	
-	for( int i =0; i < factor; i++ ) {
+	for( int i =0; i < factor / depth; i++ ) {
 	
 		Tendril tendril = geom.dataAt(first+i);
 		recursiveSubtree( tendril, depth+1, maxDepth, factor );
