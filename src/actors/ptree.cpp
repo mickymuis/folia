@@ -3,7 +3,7 @@
 #include "../common/shaderlayout.h"
 #include "../utils/glm/gtc/random.hpp"
 #include "../utils/glm/gtx/rotate_vector.hpp"
-
+#include "../utils/glm/gtc/type_ptr.hpp"
 
 GLfloat BRANCH_SECTION_DEFAULT[] {
 
@@ -55,11 +55,12 @@ PTreeGeometry::PTreeGeometry() {
 	m_type = GL_LINES_ADJACENCY;
 	
 	ShaderSource src;
-	src.addSource( VERTEX_SHADER, "ptree_branch" );
+	src.addSource( VERTEX_SHADER, "ptree" );
 	src.addSource( GEOMETRY_SHADER, "ptree_branch" );
 	src.addSource( FRAGMENT_SHADER, "ptree_branch" );
 	
 	m_program = src.createProgram();
+	wind_1 = wind_2 = glm::vec3(0);
 
 	initBuffers();
 }
@@ -116,6 +117,10 @@ void
 PTreeGeometry::updateBuffers() {
 	glBindVertexArray(m_vao);
 	
+	glUseProgram( m_program->programHandle() );
+	glUniform3fv( glGetUniformLocation(m_program->programHandle(), "wind_1"), 1, glm::value_ptr(wind_1) );
+	glUniform3fv( glGetUniformLocation(m_program->programHandle(), "wind_2"), 1, glm::value_ptr(wind_2) );
+	
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_position );
 	glEnableVertexAttribArray( S_VERTEX_ATTRIB_POSITION );
 	glEnableVertexAttribArray( S_VERTEX_ATTRIB_PARAM );
@@ -146,56 +151,85 @@ PTreeGeometry::destroyBuffers() {
 	glDeleteBuffers( 1, &vbo_position );
 }
 
+void 
+PTreeGeometry::setWind( glm::vec3 w1, glm::vec3 w2 ) {
+	wind_1 =w1;
+	wind_2 =w2;
+}
+
 /* PTree implementation */
 
 PTree::PTree( Object* parent ) : Actor( parent ) {
 
-	constraints[0].max_extensions = 10;	
+	constraints[0].max_extensions = 12;	
+	constraints[0].min_extensions = 12;	
 	constraints[0].sections =20;		
 	constraints[0].steps =2;
 	constraints[0].max_radius =1.0;
 	constraints[0].min_radius =0.5;
-	constraints[0].max_length =2.0;
+	constraints[0].max_length =1.8;
 	constraints[0].min_length =1.0;
 	constraints[0].max_total_length =15.0;
 	constraints[0].max_curvature =0.5;				
-	constraints[0].max_rough =1.0;
+	constraints[0].max_rough =0.7;
 	constraints[0].max_growth_length =0.8;
 	constraints[0].max_growth_radius =0.04;
-	constraints[0].min_branch_distance =3;
+	constraints[0].min_branch_distance =5;
 	
 	
-	constraints[1].max_extensions = 8;	
+	constraints[1].max_extensions = 8;
+	constraints[1].min_extensions = 5;	
 	constraints[1].sections =10;		
 	constraints[1].steps =5;
 	constraints[1].max_radius =0.3;
 	constraints[1].min_radius =0.1;
-	constraints[1].max_length =0.8;
-	constraints[1].min_length =0.4;
+	constraints[1].max_length =1.0;
+	constraints[1].min_length =0.5;
 	constraints[1].max_total_length =7.0;
-	constraints[1].max_curvature =0.1;				
+	constraints[1].max_curvature =0.15;				
 	constraints[1].max_rough =0.5;
 	constraints[1].max_growth_length =0.4;
 	constraints[1].max_growth_radius =0.02;
 	constraints[1].min_branch_distance =2;
 	
 	constraints[2].max_extensions = 4;	
+	constraints[2].min_extensions = 2;	
 	constraints[2].sections =6;		
 	constraints[2].steps =3;
-	constraints[2].max_radius =0.2;
-	constraints[2].min_radius =0.05;
+	constraints[2].max_radius =0.15;
+	constraints[2].min_radius =0.08;
 	constraints[2].max_length =0.4;
 	constraints[2].min_length =0.1;
 	constraints[2].max_total_length =3.0;
-	constraints[2].max_curvature =0.05;				
-	constraints[2].max_rough =0.2;
+	constraints[2].max_curvature =0.1;				
+	constraints[2].max_rough =0.0;
 	constraints[2].max_growth_length =0.4;
 	constraints[2].max_growth_radius =0.01;
-	constraints[2].min_branch_distance =1;
+	constraints[2].min_branch_distance =0;
+	
+	constraints[3].max_extensions = 1;	
+	constraints[3].min_extensions = 1;	
+	constraints[3].sections =3;		
+	constraints[3].steps =2;
+	constraints[3].max_radius =0.08;
+	constraints[3].min_radius =0.05;
+	constraints[3].max_length =0.4;
+	constraints[3].min_length =0.1;
+	constraints[3].max_total_length =3.0;
+	constraints[3].max_curvature =0.05;				
+	constraints[3].max_rough =0.0;
+	constraints[3].max_growth_length =0.4;
+	constraints[3].max_growth_radius =0.01;
+	constraints[3].min_branch_distance =1;
+	
+	m_up = glm::vec3( 0, 1, 0 );
+	m_wind_dir = glm::vec3( 1, 0, 0);
+	m_wind_freq_theta =0.0f;
+	m_wind_theta =0.0f;
 
 	root =createNode(0);
-	root->up = glm::vec3(0,1,0);
-	root->branches =0;
+	root->up = m_up;
+	root->max_branches =0;
 	
 	geom.updateBuffers();
 }
@@ -212,6 +246,17 @@ void
 PTree::update( float deltatime ) {
 
 	growRecursive( 0, root, 0, deltatime );
+	
+	m_wind_freq_theta += 0.1;
+//	m_wind_theta += sinf( m_wind_freq_theta ) * deltatime;
+	m_wind_theta += 2.0 * deltatime;
+//	if( m_wind_theta > M_2_PI )
+	//	m_wind_theta =0;
+	m_wind_dir =glm::rotate( m_wind_dir, (float)glm::linearRand( 0.0f, 0.01f ), m_up );
+	
+	geom.setWind( glm::normalize(m_wind_dir) * sinf( m_wind_theta ),
+								glm::normalize(m_wind_dir) * sinf( 2 * m_wind_theta ) );
+	
 	geom.updateBuffers();
 	Actor::update( deltatime );
 }
@@ -220,7 +265,8 @@ PTree::Node::Node()
 	: index( 0 ),
 		level( 0 ),
 		extension( 0 ),
-		branch( 0 ) { }
+		branches( 0 )
+		{ }
 		
 void 
 PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatime ) {
@@ -230,12 +276,13 @@ PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatim
 		
 	const Constraint& c= constraints[n->level];
 	
-//	printf( "%f\n\n", deltatime * glm::linearRand( 0.0f, c.max_growth_radius ) );
-	
+
 	if( parent ) {
-		//if( extension_count )
-			data(n).setAttrib( PBranchSection::BASE_RADIUS, 
-				data(parent).data[PBranchSection::HEAD_RADIUS] * (!extension_count ? 0.8 : 1.0) );
+		if( extension_count )
+			data(n).setAttrib( PBranchSection::BASE_ROUGH,
+				data(parent).data[PBranchSection::HEAD_ROUGH] );
+		data(n).setAttrib( PBranchSection::BASE_RADIUS, 
+			data(parent).data[PBranchSection::HEAD_RADIUS] * (!extension_count ? 0.7 : 1.0) );
 		data(n).setAttrib( PBranchSection::PREV, 
 			data(parent).attribVector(PBranchSection::BASE) );
 		data(n).setAttrib( PBranchSection::BASE, 
@@ -266,20 +313,32 @@ PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatim
 		
 	if( data(n).length() > n->max_length * 0.25
 	&& !n->extension 
-	&& extension_count < c.max_extensions ) {
+	&& extension_count < n->max_extensions ) {
 		n->extension =createNode( n->level );
 		
 		if( extension_count < c.min_branch_distance ) 
 			n->extension->branches =0;
+			
 		
-		glm::vec3 axis = glm::sphericalRand( 1.0 );
-		float angle = glm::linearRand( 0.001, 0.05 );
 		
+		glm::vec3 axis = glm::cross( data(n).attribVector( PBranchSection::HEAD ) - n->curve,
+			 up /*data(n).attribVector( PBranchSection::HEAD ) - data(n).attribVector( PBranchSection::BASE )*/ );
+		axis = glm::rotate( axis, (float)glm::linearRand( 0.0, 2* M_PI ), up );
+		float angle = glm::linearRand( 0.01, 0.45 );	
 		glm::vec3 offset = glm::rotate( up, angle, axis );
 		
+		/* The tendency to grow towards the sun varies per branching level */
+		float up_tendency = ((n->level+1) / MAX_LEVEL) * 0.3;
+		glm::vec3 branch_up = ( up_tendency * m_up + (1.0f - up_tendency) * glm::normalize(offset));
+		
 		data(n->extension).setAttrib( PBranchSection::HEAD, data(n).attribVector( PBranchSection::HEAD ) + glm::vec3(0.05) );
-		n->extension->max_radius *= sqrt( 1.0 / (extension_count+2));
-		n->extension->up = offset;
+		data(n->extension).setAttrib( PBranchSection::BASE_SEED, data(n).data[PBranchSection::HEAD_SEED] );
+		data(n->extension).setAttrib( PBranchSection::PREV_SEED, data(n).data[PBranchSection::BASE_SEED] );
+		data(n->extension).setAttrib( PBranchSection::HEAD_SEED, data(n).data[PBranchSection::HEAD_SEED] );
+//		n->extension->max_radius *= sqrt( 1.0 / (extension_count+2));
+//		n->extension->max_radius = glm::linearRand( c.min_radius, n->max_radius * 0.5f );
+		n->extension->max_radius = n->max_radius * 0.8f;
+		n->extension->up = branch_up;
 	}
 
 		
@@ -292,33 +351,52 @@ PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatim
 	}
 	
 	if( data(n).data[ PBranchSection::HEAD_RADIUS ] > n->max_radius * 0.15
-		&& !n->branch 
 		&& n->level != MAX_LEVEL -1
-		&& n->branches ) {
+		&& n->branches < n->max_branches ) {
+		
+		int b = n->branches++;
 		
 		printf( "Branch!\n" );
 		
-		n->branch =createNode( n->level + 1 );
+		n->branch[b] =createNode( n->level + 1 );
 		
 		if( extension_count < c.min_branch_distance ) 
-			n->branch->branches =0;
+			n->branch[b]->branches =0;
 		
 		glm::vec3 axis = glm::cross( data(n).attribVector( PBranchSection::HEAD ), data(n).attribVector( PBranchSection::BASE ) );
 		axis = glm::rotate( axis, (float)glm::linearRand( 0.0, 2* M_PI ), up );
-		float angle = glm::linearRand( 0.5, 1.5 );
-		
+		float angle = glm::linearRand( 0.5, 1.5 );	
 		glm::vec3 offset = glm::rotate( up, angle, axis );
 		
-		data(n->branch).setAttrib( PBranchSection::HEAD, data(n).attribVector( PBranchSection::HEAD ) + glm::vec3(0.05) );
-//		n->branch->max_radius *= powf( 1.0 / (extension_count+2), 2);
-		n->branch->up = offset;
+		data(n->branch[b]).setAttrib( PBranchSection::HEAD, data(n).attribVector( PBranchSection::HEAD ) + glm::vec3(0.05) );
+		data(n->branch[b]).setAttrib( PBranchSection::BASE_SEED, data(n).data[PBranchSection::HEAD_SEED] );
+		data(n->branch[b]).setAttrib( PBranchSection::PREV_SEED, data(n).data[PBranchSection::BASE_SEED] );
+		data(n->branch[b]).setAttrib( PBranchSection::HEAD_SEED, glm::linearRand( -1.0, 1.0 ) );
+		n->branch[b]->max_radius *= glm::max( n->branch[b]->max_radius, n->max_radius * 0.7f );
+		n->branch[b]->up = offset;
 		
+	}
+	
+	float max_rough, rough;
+	if( parent && extension_count )
+		max_rough =data(parent).data[PBranchSection::HEAD_ROUGH] * 0.8f;
+	else
+		max_rough =c.max_rough;
+		
+		
+		
+	if( (rough = data(n).data[PBranchSection::HEAD_ROUGH]) < max_rough ) {
+		rough += glm::linearRand( 0.0f, c.max_growth_radius ) * deltatime;
+		data(n).setAttrib( PBranchSection::HEAD_ROUGH, rough );
+		if( !parent || !extension_count )
+			data(n).setAttrib( PBranchSection::BASE_ROUGH, rough );
 	}
 	
 	data(n).setAttrib( PBranchSection::CURVE, n->curve * data(n).length() / n->max_length );
 	
 	growRecursive( n, n->extension, extension_count+1, deltatime );
-	growRecursive( n, n->branch, 0, deltatime );
+	for( int b =0; b < n->branches; b++ )
+		growRecursive( n, n->branch[b], 0, deltatime );
 	
 }
 
@@ -332,10 +410,12 @@ PTree::createNode( int level ) {
 	n->max_length = glm::linearRand( constraints[level].min_length, constraints[level].max_length );
 	n->max_radius = glm::linearRand( constraints[level].min_radius, constraints[level].max_radius );
 	n->curve = glm::ballRand( constraints[level].max_curvature );
-	n->branches = glm::linearRand( 1.0, 2.0 );
+	n->max_branches = glm::linearRand( 1.0, 3.4 );
+	n->max_extensions = glm::linearRand( constraints[level].min_extensions, constraints[level].max_extensions );
 	
 	data(n).setAttrib( PBranchSection::SECTIONS, constraints[level].sections );
 	data(n).setAttrib( PBranchSection::STEPS, constraints[level].steps );
+	//data(n).setAttrib( PBranchSection::HEAD_SEED, glm::linearRand( 0.0, 0.25 ) );
 	
 	printf( "PTree: new level %d node\n", level );
 	

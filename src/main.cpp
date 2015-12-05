@@ -64,7 +64,7 @@ int main(int argc, char * argv[])
 	
 	PTree tree ( w.currentZone() );
 	tree.transform().setPosition( glm::vec3( 0, 0, 0 ) );
-	tree.body().setRotationalVelocity( glm::vec3( 0.0, 0.5, 0.0 ) );
+	//tree.body().setRotationalVelocity( glm::vec3( 0.0, 0.5, 0.0 ) );
 	
 	Light light0( w.currentZone() );
 	light0.setIntensity( glm::vec3( 0.8 ) );

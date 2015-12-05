@@ -28,14 +28,14 @@ class PBranchSection {
 			HEAD_X,			HEAD_Y,				HEAD_Z,
 			CURVE_X,		CURVE_Y,			CURVE_Z,
 			NEXT_X,			NEXT_Y,				NEXT_Z,
-			SECTIONS,		STEPS,				RESERVED,
+			SECTIONS,		STEPS,				PREV_SEED,
 			NUM_FLOATS
 		};
 
 		void setAttrib( Attrib, glm::vec3 );
 		void setAttrib( AttribElement, float );
 		glm::vec3 attribVector( Attrib ) const;
-		
+			
 		float length() const;
 		
 		GLfloat data[NUM_FLOATS];
@@ -60,6 +60,8 @@ class PTreeGeometry : public Geometry {
 		virtual GLsizei size() const { return branchCount() * 4; } 
 		virtual bool renderDeferred() const { return true; }
 		
+		void setWind( glm::vec3, glm::vec3 );
+		
 	private:
 		void initBuffers();
 		void destroyBuffers();
@@ -67,6 +69,7 @@ class PTreeGeometry : public Geometry {
 		GLuint vbo_position;
 		
 		std::vector<PBranchSection> data;
+		glm::vec3 wind_1, wind_2;
 };
 
 class PTree : public Actor {
@@ -79,11 +82,12 @@ class PTree : public Actor {
 		
 	private:
 		enum Constants {
-			MAX_LEVEL =3
+			MAX_LEVEL =4
 		};
 		class Constraint {
 			public:
 				int max_extensions;	
+				int min_extensions;
 				int sections;		
 				int steps;
 				int min_branch_distance;
@@ -103,6 +107,8 @@ class PTree : public Actor {
 				int index;
 				int level;
 				int branches;
+				int max_branches;
+				int max_extensions;
 				
 				float age;
 				float totalLength;
@@ -114,7 +120,7 @@ class PTree : public Actor {
 				glm::vec3 up;
 				
 				Node* extension; // left child
-				Node* branch; // right child
+				Node* branch[3]; // right child(ren)
 				
 				Node();
 		};
@@ -127,6 +133,10 @@ class PTree : public Actor {
 		PTreeGeometry geom;
 		Node *root;
 		Constraint constraints[MAX_LEVEL];
+		glm::vec3 m_up ;
+		glm::vec3 m_wind_dir;
+		float m_wind_freq_theta;
+		float m_wind_theta;
 };
 
 #endif

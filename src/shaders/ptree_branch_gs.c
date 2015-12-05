@@ -7,6 +7,10 @@ layout (triangle_strip, max_vertices=113) out;
 uniform mat4 mat_model;
 uniform mat4 mat_view;
 uniform mat4 mat_projection;
+
+uniform vec3 wind_1;
+uniform vec3 wind_2;
+const vec3 up = vec3( 0, 1, 0 );
  
 in VS_OUT {
     vec3 param;
@@ -55,6 +59,18 @@ emitAndMult( vec3 v, vec3 n, vec2 t ) {
 	EmitVertex();
 }
 
+vec3
+displace( vec3 v, float seed ) {
+	float factor = pow( length( v ) * 0.02, 2 );
+//	vec3 v1 = wind * factor;
+//	vec3 v2 = sign(seed) * normalize( cross( wind, up ) ) * length( wind ) * factor;
+	vec3 v1 = wind_1 * factor;
+	vec3 v2 = wind_2 * factor;
+	
+	return v + ( v1 * (1.0 - seed) + v2 * abs(seed) );
+	//return v + v1;
+}
+
 void 
 main() {
 
@@ -67,28 +83,29 @@ main() {
 			HEAD_X,			HEAD_Y,				HEAD_Z,
 			CURVE_X,		CURVE_Y,			CURVE_Z,
 			NEXT_X,			NEXT_Y,				NEXT_Z,
-			SECTIONS,		STEPSIZE,			RESERVED
+			SECTIONS,		STEPSIZE,			PREV_SEED
 			*/
-	
-	vec3 prev = gl_in[0].gl_Position.xyz;
-	vec3 base = gl_in[1].gl_Position.xyz;
-	vec3 head = gl_in[2].gl_Position.xyz;
-	vec3 next = gl_in[3].gl_Position.xyz;
 	
 	float base_radius = gs_in[0].param.x;
 	float base_rough = gs_in[0].param.y;
 	float base_seed = gs_in[0].param.z;
+	float prev_seed = gs_in[3].param.z;
 	
 	float head_radius = gs_in[1].param.x;
 	float head_rough = gs_in[1].param.y;
 	float head_seed = gs_in[1].param.z;
+	
+	vec3 prev = displace( gl_in[0].gl_Position.xyz, prev_seed );
+	vec3 base = displace( gl_in[1].gl_Position.xyz, base_seed );
+	vec3 head = displace( gl_in[2].gl_Position.xyz, head_seed );
+	vec3 next = gl_in[3].gl_Position.xyz;
 	
 	vec3 curve = (base+head) / 2 + gs_in[2].param;
 	
 	sections = int(gs_in[3].param.x);
 	float r_step = radians( 360.0 / float(sections) );
 	float l_step = 1.0 / gs_in[3].param.y;
-	float reserved = gs_in[3].param.z;
+	//float reserved = gs_in[3].param.z;
 	
 	float radius_step = head_radius - base_radius;
 	float radius1, radius2;
