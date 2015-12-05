@@ -47,13 +47,15 @@ class Geometry {
 	public:
 		Geometry() {}
 		~Geometry() {}
+
+		virtual int bufferCount() const { return 1; }
 		
-		virtual GLuint vao() const { return m_vao; }
-		virtual ShaderProgram* program() const { return m_program; }
-		virtual GLenum type() const { return m_type; }
-		virtual GLint first() const { return 0; }
-		virtual GLsizei size() const { return m_size; } 
-		virtual bool renderDeferred() const { return false; }
+		virtual GLuint vao( int n = 0 ) const { return m_vao; }
+		virtual ShaderProgram* program( int n = 0 ) const { return m_program; }
+		virtual GLenum type( int n = 0 ) const { return m_type; }
+		virtual GLint first( int n = 0 ) const { return 0; }
+		virtual GLsizei size( int n = 0 ) const { return m_size; } 
+		virtual bool renderDeferred( int n = 0 ) const { return false; }
 		
 	protected:
 		GLuint m_vao;
@@ -64,6 +66,7 @@ class Geometry {
 
 class SolidGeometry : public Geometry {
 	public:
+		virtual bool renderDeferred( int n = 0 ) const { return true; }
 };
 
 #endif

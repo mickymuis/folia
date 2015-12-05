@@ -184,7 +184,7 @@ Engine::draw( Viewport* viewport ) {
 		glUniform3fv( glGetUniformLocation(p, "light_position"), 1, glm::value_ptr(l->transform().position()) );
 		glUniform3fv( glGetUniformLocation(p, "light_intensity"), 1, glm::value_ptr(l->intensity()) );
 		
-		render( &m_screen );
+		render( &m_screen, 0 );
 		
 	}
 	
@@ -258,27 +258,30 @@ Engine::renderQueue( const RenderQueue& queue, glm::mat4 matview, glm::mat4x4 ma
 		if( !filter( g, filters ) )
 			continue;
 			
-		ShaderProgram *program = g->program();
+		for( int i =0; i < g->bufferCount(); i++ ) {
+			
+			ShaderProgram *program = g->program(i);
 		
-		if( program ) {
-			GLuint p =program->programHandle();
-			glUseProgram( p );
+			if( program ) {
+				GLuint p =program->programHandle();
+				glUseProgram( p );
 	
-			glUniformMatrix4fv(glGetUniformLocation(p, "mat_model"), 1, GL_FALSE, glm::value_ptr(tuple.matmodel));
-			glUniformMatrix4fv(glGetUniformLocation(p, "mat_view"), 1, GL_FALSE, glm::value_ptr(matview));
-			glUniformMatrix4fv(glGetUniformLocation(p, "mat_projection"), 1, GL_FALSE, glm::value_ptr(matprojection));
-		}
+				glUniformMatrix4fv(glGetUniformLocation(p, "mat_model"), 1, GL_FALSE, glm::value_ptr(tuple.matmodel));
+				glUniformMatrix4fv(glGetUniformLocation(p, "mat_view"), 1, GL_FALSE, glm::value_ptr(matview));
+				glUniformMatrix4fv(glGetUniformLocation(p, "mat_projection"), 1, GL_FALSE, glm::value_ptr(matprojection));
+			}
 		
-		render( g );
+			render( g, i );
+		}
 		
 	}
 }
 
 void 
-Engine::render( Geometry* g ) {
+Engine::render( Geometry* g, int i ) {
 
-	glBindVertexArray( g->vao() );
-	glDrawArrays( g->type(), g->first(), g->size() );
+	glBindVertexArray( g->vao(i) );
+	glDrawArrays( g->type(i), g->first(i), g->size(i) );
 }
 
 bool 

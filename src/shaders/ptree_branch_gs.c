@@ -62,13 +62,10 @@ emitAndMult( vec3 v, vec3 n, vec2 t ) {
 vec3
 displace( vec3 v, float seed ) {
 	float factor = pow( length( v ) * 0.02, 2 );
-//	vec3 v1 = wind * factor;
-//	vec3 v2 = sign(seed) * normalize( cross( wind, up ) ) * length( wind ) * factor;
 	vec3 v1 = wind_1 * factor;
 	vec3 v2 = wind_2 * factor;
 	
 	return v + ( v1 * (1.0 - seed) + v2 * abs(seed) );
-	//return v + v1;
 }
 
 void 

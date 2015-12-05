@@ -182,7 +182,7 @@ TendrilField::~TendrilField() {
 }
 
 Geometry* 
-TendrilField::geometry() {
+TendrilField::geometry( int ) {
 	return &geom;
 }
 

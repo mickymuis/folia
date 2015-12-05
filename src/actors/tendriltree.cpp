@@ -28,7 +28,7 @@ TendrilTree::~TendrilTree() {
 }
 
 Geometry* 
-TendrilTree::geometry() {
+TendrilTree::geometry( int ) {
 	return &geom;
 }
 

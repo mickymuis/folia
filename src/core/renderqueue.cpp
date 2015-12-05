@@ -33,13 +33,14 @@ RenderQueue::rebuild( /*glm::mat4 viewmatrix*/ ) {
 			Actor *actor = reinterpret_cast<Actor*>(o);
 			
 			if( actor->geometry() ) {
-				RenderQueueTuple tuple;
+				for( int i =0; i < actor->geometryCount(); i++ ) {
+					RenderQueueTuple tuple;
 					
-				tuple.matmodel = matmodel;
-				
-				tuple.geometry = actor->geometry();
+					tuple.matmodel = matmodel;
+					tuple.geometry = actor->geometry(i);
 			
-				m_queue.push_back( tuple );			
+					m_queue.push_back( tuple );			
+				}
 			}
 		}
 			

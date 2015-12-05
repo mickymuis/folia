@@ -12,7 +12,7 @@ class TendrilTree : public Actor {
 	public:
 		TendrilTree( Object* parent );
 		~TendrilTree();
-		Geometry* geometry();
+		Geometry* geometry( int n =0 );
 		
 		virtual void update( float deltatime );
 		

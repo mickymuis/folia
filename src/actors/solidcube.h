@@ -10,7 +10,7 @@ class SolidCubeGeometry : public Geometry {
 		SolidCubeGeometry();
 		~SolidCubeGeometry();
 		
-		virtual bool renderDeferred() const { return true; }
+		virtual bool renderDeferred( int n = 0 ) const { return true; }
 		
 	private:
 		void initBuffers();
@@ -24,7 +24,7 @@ class SolidCube : public Actor {
 	public:
 		SolidCube( Object* parent );
 		~SolidCube();
-		Geometry* geometry();
+		Geometry* geometry( int n =0 );
 		
 	private:
 		SolidCubeGeometry cube;

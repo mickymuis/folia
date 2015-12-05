@@ -6,6 +6,7 @@
 #include "../core/geometry.h"
 #include "../utils/glm/vec3.hpp"
 #include <vector>
+#include <list>
 
 class PBranchSection {
 	public:
@@ -43,40 +44,96 @@ class PBranchSection {
 		PBranchSection();
 };
 
+class PLeaf {
+	public:
+		enum Attrib {
+			BASE,
+			PARAMS1,
+			TIP,
+			PARAMS2,
+			UP,
+			UNUSED
+		};
+
+		enum AttribElement {
+			BASE_X,		BASE_Y,		BASE_Z,
+			WIDTH,		CONCAVITY,SEED,
+			TIP_X,		TIP_Y,		TIP_Z,
+			NUM_LEAFS,ROUNDESS, RESERVED,
+			UP_X,			UP_Y,			UP_Z,
+			RESERVED1,RESERVED2,RESERVED3,
+			NUM_FLOATS
+		};
+
+		void setAttrib( Attrib, glm::vec3 );
+		void setAttrib( AttribElement, float );
+		glm::vec3 attribVector( Attrib ) const;
+			
+		float length() const;
+		
+		GLfloat data[NUM_FLOATS];
+		
+		PLeaf();
+};
+
 class PTreeGeometry : public Geometry {
 	public:
+		enum LeafMode {
+			LEAF,
+			BLOSSOM
+		};
+		
 		PTreeGeometry();
 		~PTreeGeometry();
 		
-		size_t append( int num =1 );
 		size_t append( const PBranchSection& );
+		size_t append( const PLeaf& );
 		
-		void setDataAt( int index, const PBranchSection& );
-		PBranchSection& dataAt( int index );
+		PBranchSection& branchAt( int index );
+		PLeaf& leafAt( int index );
 		
 		void updateBuffers();
 		
 		size_t branchCount() const;
-		virtual GLsizei size() const { return branchCount() * 4; } 
-		virtual bool renderDeferred() const { return true; }
+		size_t leafCount() const;
+		bool renderDeferred( int n = 1 ) const { return true; }
 		
 		void setWind( glm::vec3, glm::vec3 );
+		
+		void setLeafMode( LeafMode );
+		
+		int bufferCount() const { return 2; }
+		
+		GLuint vao( int n = 0 ) const;
+		ShaderProgram* program( int n = 0 ) const;
+		GLenum type( int n = 0 ) const;
+		GLint first( int n = 0 ) const;
+		GLsizei size( int n = 0 ) const;
 		
 	private:
 		void initBuffers();
 		void destroyBuffers();
 		
-		GLuint vbo_position;
+		GLuint vbo_branches;
+		GLuint vbo_leafs;
+		GLuint m_vao_leafs;
 		
-		std::vector<PBranchSection> data;
+		std::vector<PBranchSection> branches;
+		std::vector<PLeaf> leafs;
 		glm::vec3 wind_1, wind_2;
+		
+		LeafMode leaf_mode;
+		
+		ShaderProgram *m_leafProgram;
+		ShaderProgram *m_blossomProgram;
 };
 
 class PTree : public Actor {
 	public:
 		PTree( Object* parent );
 		~PTree();
-		Geometry* geometry();
+		Geometry* geometry(int n =0);
+		int geometryCount() { return 1; }
 		
 		virtual void update( float deltatime );
 		
@@ -102,6 +159,7 @@ class PTree : public Actor {
 				float max_growth_radius;
 		};
 		
+		class Leaf;
 		class Node {
 			public:
 				int index;
@@ -121,14 +179,24 @@ class PTree : public Actor {
 				
 				Node* extension; // left child
 				Node* branch[3]; // right child(ren)
+				Leaf* leaf;
 				
 				Node();
 		};
 		
-		void growRecursive( Node* parent, Node* n, int extension_count, float deltatime );
-		PBranchSection &data( Node* );
-		Node *createNode( int level );
+		class Leaf {
+			public:
+				int index;
+				
+				Node *parent;
+		};
 		
+		void growRecursive( Node* parent, Node* n, int extension_count, float deltatime );
+		void growLeafs();
+		PBranchSection &data( Node* );
+		PLeaf &data( Leaf* );
+		Node *createNode( int level );
+		Leaf *createLeaf( Node* parent );
 	
 		PTreeGeometry geom;
 		Node *root;
@@ -137,6 +205,8 @@ class PTree : public Actor {
 		glm::vec3 m_wind_dir;
 		float m_wind_freq_theta;
 		float m_wind_theta;
+		
+		std::list<Leaf*> leafs;
 };
 
 #endif

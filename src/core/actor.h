@@ -46,7 +46,8 @@ class Actor : public Object {
 		
 		Body& body() { return m_body; }
 		
-		virtual Geometry* geometry() =0;
+		virtual Geometry* geometry( int n =0 ) =0;
+		virtual int geometryCount() { return 1; }
 		
 	private:
 		bool m_visible;

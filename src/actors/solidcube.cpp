@@ -140,7 +140,7 @@ SolidCube::~SolidCube() {
 }
 
 Geometry* 
-SolidCube::geometry() {
+SolidCube::geometry( int ) {
 	return &cube;
 }
 	

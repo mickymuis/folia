@@ -52,8 +52,8 @@ class TendrilGeometry : public Geometry {
 		void updateBuffers();
 		
 		size_t tendrilCount() const;
-		virtual GLsizei size() const { return tendrilCount() * 3; } 
-		virtual bool renderDeferred() const { return true; }
+		virtual GLsizei size( int n = 0 ) const { return tendrilCount() * 3; } 
+		virtual bool renderDeferred( int n = 0 ) const { return true; }
 		
 	private:
 		void initBuffers();
@@ -69,7 +69,7 @@ class TendrilField : public Actor {
 	public:
 		TendrilField( Object* parent );
 		~TendrilField();
-		Geometry* geometry();
+		Geometry* geometry( int n =0 );
 		
 		virtual void update( float deltatime );
 		

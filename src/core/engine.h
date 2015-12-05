@@ -54,7 +54,7 @@ class Engine {
 		// Render passes
 		void preRender( Viewport* );
 		void renderQueue( const RenderQueue&, glm::mat4 viewmatrix, glm::mat4x4 matprojection, int filters );
-		void render( Geometry* );
+		void render( Geometry*, int );
 		
 		// Initializers
 		void initialize();

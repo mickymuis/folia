@@ -29,9 +29,9 @@ int main(int argc, char * argv[])
 	//window2.setEngine( &engine );
 	World w;
 	Camera cam;
-	cam.setPosition( glm::vec3(0,1,1));
-	cam.setTarget( glm::vec3(0,0.5,0));
-	cam.moveLocal( Camera::BACK, 25.0f );
+	cam.setPosition( glm::vec3(0.1, 4.0,20));
+	cam.setTarget( glm::vec3(-0.1, 8.0,-0.1));
+	//cam.moveLocal( Camera::BACK, 25.0f );
 	
 	Camera cam2;
 	//cam2.setPosition( glm::vec3( 0.0, 4.0, 5.0 ) );
@@ -64,7 +64,9 @@ int main(int argc, char * argv[])
 	
 	PTree tree ( w.currentZone() );
 	tree.transform().setPosition( glm::vec3( 0, 0, 0 ) );
-	//tree.body().setRotationalVelocity( glm::vec3( 0.0, 0.5, 0.0 ) );
+//	PTree tree2 ( w.currentZone() );
+//	tree2.transform().setPosition( glm::vec3( -2, 0, 2 ) );
+//	tree.body().setRotationalVelocity( glm::vec3( 0.0, 0.5, 0.0 ) );
 	
 	Light light0( w.currentZone() );
 	light0.setIntensity( glm::vec3( 0.8 ) );
