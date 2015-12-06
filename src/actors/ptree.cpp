@@ -1,5 +1,6 @@
 #include "ptree.h"
 #include "../utils/shaderprogram.h"
+#include "../utils/sdltextureloader.h"
 #include "../common/shaderlayout.h"
 #include "../utils/glm/gtc/random.hpp"
 #include "../utils/glm/gtx/rotate_vector.hpp"
@@ -160,6 +161,11 @@ PTreeGeometry::leafCount() const {
 }
 
 void 
+PTreeGeometry::clearLeafs() {
+	leafs.clear();
+}
+
+void 
 PTreeGeometry::initBuffers() {
 	
 	glGenVertexArrays(1, &m_vao);
@@ -167,6 +173,17 @@ PTreeGeometry::initBuffers() {
 	
 	glBindVertexArray(m_vao);
 	glGenBuffers(1, &vbo_branches);
+	
+	tex_diffuse1 =loadTextureBMP( "stem1.bmp", true );
+	tex_diffuse2 =loadTextureBMP( "bark_pine1.bmp", true );
+	tex_normal =loadTextureBMP( "bark_pine1_normal.bmp", true );
+	
+	if( m_program ) {
+		glUseProgram( m_program->programHandle() );
+		glUniform1i(glGetUniformLocation(m_program->programHandle(), "tex_diffuse1"), 0);
+		glUniform1i(glGetUniformLocation(m_program->programHandle(), "tex_diffuse2"), 1);
+		glUniform1i(glGetUniformLocation(m_program->programHandle(), "tex_normal"), 2);
+	}
 	
 	glBindVertexArray(m_vao_leafs);
 	glGenBuffers(1, &vbo_leafs);
@@ -206,6 +223,8 @@ PTreeGeometry::updateBuffers() {
 												);
 	glBufferData( GL_ARRAY_BUFFER, branches.size() * sizeof( PBranchSection ), &branches[0], GL_STATIC_DRAW );
 	
+	//printf( "Branch buffer size: %d sections, %lu vertices, %lu bytes.\n", branches.size(), branches.size()*8, branches.size() * sizeof(PBranchSection));
+	
 	/* Leafs buffer */
 	if( program(1) ) {
 		glUseProgram( program(1)->programHandle() );
@@ -239,6 +258,18 @@ PTreeGeometry::updateBuffers() {
 	
 	glBindVertexArray( 0 );
 }
+
+void
+PTreeGeometry::preRender( int n ) {
+	if( n == 0 ) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, tex_diffuse1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, tex_diffuse2);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, tex_normal);
+	}
+};
 
 void 
 PTreeGeometry::destroyBuffers() {
@@ -296,7 +327,7 @@ GLsizei
 PTreeGeometry::size( int n ) const {
 	if( n == 1 )
 		return leafCount() * 3;
-	return branchCount() * 3;
+	return branchCount() * 4;
 }
 
 /* PTree implementation */
@@ -304,9 +335,9 @@ PTreeGeometry::size( int n ) const {
 PTree::PTree( Object* parent ) : Actor( parent ) {
 	
 	constraints[0].max_extensions = 12;	
-	constraints[0].min_extensions = 12;	
-	constraints[0].sections =20;		
-	constraints[0].steps =2;
+	constraints[0].min_extensions = 11;	
+	constraints[0].sections =12; // 16		
+	constraints[0].steps =3;
 	constraints[0].max_radius =1.0;
 	constraints[0].min_radius =0.5;
 	constraints[0].max_length =1.8;
@@ -321,8 +352,8 @@ PTree::PTree( Object* parent ) : Actor( parent ) {
 	
 	constraints[1].max_extensions = 8;
 	constraints[1].min_extensions = 5;	
-	constraints[1].sections =10;		
-	constraints[1].steps =5;
+	constraints[1].sections =8;	//
+	constraints[1].steps =4;
 	constraints[1].max_radius =0.3;
 	constraints[1].min_radius =0.1;
 	constraints[1].max_length =1.0;
@@ -331,7 +362,7 @@ PTree::PTree( Object* parent ) : Actor( parent ) {
 	constraints[1].max_curvature =0.15;				
 	constraints[1].max_rough =0.5;
 	constraints[1].max_growth_length =0.4;
-	constraints[1].max_growth_radius =0.02;
+	constraints[1].max_growth_radius =0.04;
 	constraints[1].min_branch_distance =2;
 	
 	constraints[2].max_extensions = 3;	
@@ -341,13 +372,13 @@ PTree::PTree( Object* parent ) : Actor( parent ) {
 	constraints[2].max_radius =0.15;
 	constraints[2].min_radius =0.08;
 	constraints[2].max_length =0.4;
-	constraints[2].min_length =0.1;
+	constraints[2].min_length =0.2;
 	constraints[2].max_total_length =3.0;
 	constraints[2].max_curvature =0.1;				
 	constraints[2].max_rough =0.0;
 	constraints[2].max_growth_length =0.4;
-	constraints[2].max_growth_radius =0.01;
-	constraints[2].min_branch_distance =0;
+	constraints[2].max_growth_radius =0.04;
+	constraints[2].min_branch_distance =1;
 	
 	constraints[3].max_extensions = 1;	
 	constraints[3].min_extensions = 1;	
@@ -356,12 +387,12 @@ PTree::PTree( Object* parent ) : Actor( parent ) {
 	constraints[3].max_radius =0.08;
 	constraints[3].min_radius =0.05;
 	constraints[3].max_length =0.4;
-	constraints[3].min_length =0.1;
+	constraints[3].min_length =0.2;
 	constraints[3].max_total_length =3.0;
 	constraints[3].max_curvature =0.05;				
 	constraints[3].max_rough =0.0;
 	constraints[3].max_growth_length =0.4;
-	constraints[3].max_growth_radius =0.01;
+	constraints[3].max_growth_radius =0.04;
 	constraints[3].min_branch_distance =1;
 	
 	m_up = glm::vec3( 0, 1, 0 );
@@ -375,9 +406,12 @@ PTree::PTree( Object* parent ) : Actor( parent ) {
 	
 	//
 	
-	/*PLeaf l;
-	geom.append( l );*/
 	geom.setLeafMode( PTreeGeometry::LEAF );
+	
+	season =SEASON_SPRING;
+	season_time =0;
+	time_per_season = 20;
+	gravity =0.9;
 	
 	geom.updateBuffers();
 }
@@ -393,8 +427,28 @@ PTree::geometry( int ) {
 void 
 PTree::update( float deltatime ) {
 
+	deltatime = glm::min( deltatime, 0.1f );
+	
+	season_time += deltatime;
+	if( season_time > time_per_season ) {
+		season_time =0;
+		/* Change the season */
+		if( season == SEASON_WINTER ) {
+			season = SEASON_SPRING;
+			/* Cleanup the fallen leafs */
+			std::list<Leaf*>::iterator it;
+			for( it = leafs.begin(); it != leafs.end(); it ++ )
+				delete (*it);
+			leafs.clear();
+			geom.clearLeafs();
+		}
+		else {
+			season++;
+		}
+	}
+	
 	growRecursive( 0, root, 0, deltatime );
-	growLeafs();
+	growLeafs( deltatime );
 	
 	m_wind_freq_theta += 0.1;
 	m_wind_theta += 2.0 * deltatime;
@@ -445,7 +499,8 @@ PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatim
 		}
 	}
 	
-	glm::vec3 up = n->up;//data(n).attribVector( PBranchSection::HEAD ) - data(n).attribVector( PBranchSection::BASE );
+	glm::vec3 up = n->up;
+	
 	n->age += deltatime;
 	
 
@@ -466,31 +521,31 @@ PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatim
 			n->extension =createNode( n->level );
 		
 			if( extension_count < c.min_branch_distance ) 
-				n->extension->branches =0;
-			
+				n->extension->branches =0;		
 		
-		
-			glm::vec3 axis = glm::cross( data(n).attribVector( PBranchSection::HEAD ) - n->curve,
-				 up /*data(n).attribVector( PBranchSection::HEAD ) - data(n).attribVector( PBranchSection::BASE )*/ );
+			float max_angle = ( M_PI / 4.0f ) * ( (float)(n->level + 1)/ (float)MAX_LEVEL );
+			float min_angle = max_angle * 0.8;
+			glm::vec3 axis = glm::cross( data(n).attribVector( PBranchSection::HEAD ) - n->curve, up );
 			axis = glm::rotate( axis, (float)glm::linearRand( 0.0, 2* M_PI ), up );
-			float angle = glm::linearRand( 0.01, 0.45 );	
+			float angle = glm::linearRand( min_angle, max_angle );	
 			glm::vec3 offset = glm::rotate( up, angle, axis );
 		
-			/* The tendency to grow towards the sun varies per branching level */
-			float up_tendency = ((n->level+1) / MAX_LEVEL) * 0.3;
-			glm::vec3 branch_up = ( up_tendency * m_up + (1.0f - up_tendency) * glm::normalize(offset));
-		
-			data(n->extension).setAttrib( PBranchSection::HEAD, data(n).attribVector( PBranchSection::HEAD ) + glm::vec3(0.05) );
+			glm::vec3 branch_up = glm::normalize(offset);
+	
+			data(n->extension).setAttrib( PBranchSection::HEAD, data(n).attribVector( PBranchSection::HEAD ) + branch_up * 0.01f );
 			data(n->extension).setAttrib( PBranchSection::BASE_SEED, data(n).data[PBranchSection::HEAD_SEED] );
 			data(n->extension).setAttrib( PBranchSection::PREV_SEED, data(n).data[PBranchSection::BASE_SEED] );
 			data(n->extension).setAttrib( PBranchSection::HEAD_SEED, data(n).data[PBranchSection::HEAD_SEED] );
-	//		n->extension->max_radius *= sqrt( 1.0 / (extension_count+2));
-	//		n->extension->max_radius = glm::linearRand( c.min_radius, n->max_radius * 0.5f );
+
 			n->extension->max_radius = glm::max( n->max_radius * 0.8f, 0.05f );
+			n->extension->max_extensions =n->max_extensions;
 			n->extension->up = branch_up;
 		} else if( !n->leaf ) {
 			/* ... Or grow a leaf */
-			//n->leaf = createLeaf( n );
+			if( season == SEASON_SPRING ) {
+				n->leaf = createLeaf( n );
+				data(n->leaf).setAttrib( PLeaf::TIP, data(n).attribVector( PBranchSection::HEAD ) );
+			}
 		}
 	}
 
@@ -499,9 +554,12 @@ PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatim
 		float head_radius =data(n).data[PBranchSection::HEAD_RADIUS];
 		if( head_radius < n->max_radius ) {
 			head_radius += glm::linearRand( 0.0f, c.max_growth_radius ) * deltatime;
+			//head_radius += c.max_growth_radius * deltatime;
 			data(n).setAttrib( PBranchSection::HEAD_RADIUS, head_radius );
 		}
 	}
+	else
+		data(n).setAttrib( PBranchSection::HEAD_RADIUS, 0.001f );
 	
 	if( data(n).data[ PBranchSection::HEAD_RADIUS ] > n->max_radius * 0.15
 		&& n->level != MAX_LEVEL -1
@@ -509,23 +567,26 @@ PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatim
 		
 		int b = n->branches++;
 		
-		printf( "Branch!\n" );
-		
 		n->branch[b] =createNode( n->level + 1 );
 		
 		if( extension_count < c.min_branch_distance ) 
 			n->branch[b]->branches =0;
+			
+
+		float max_angle = ( M_PI / 2.0f ) * ( 1.1 - (float)(extension_count + 1)/ (float)c.max_extensions );
+		float min_angle = max_angle * 0.9;
 		
-		glm::vec3 axis = glm::cross( data(n).attribVector( PBranchSection::HEAD ), data(n).attribVector( PBranchSection::BASE ) );
+		//glm::vec3 axis = glm::cross( data(n).attribVector( PBranchSection::HEAD ), data(n).attribVector( PBranchSection::BASE ) );
+		glm::vec3 axis = glm::cross( data(n).attribVector( PBranchSection::HEAD ) - n->curve, up );
 		axis = glm::rotate( axis, (float)glm::linearRand( 0.0, 2* M_PI ), up );
-		float angle = glm::linearRand( 0.5, 1.5 );	
+		float angle = glm::linearRand( min_angle, max_angle );	
 		glm::vec3 offset = glm::rotate( up, angle, axis );
 		
-		data(n->branch[b]).setAttrib( PBranchSection::HEAD, data(n).attribVector( PBranchSection::HEAD ) + glm::vec3(0.05) );
+		data(n->branch[b]).setAttrib( PBranchSection::HEAD, data(n).attribVector( PBranchSection::HEAD ) + offset * 0.01f );
 		data(n->branch[b]).setAttrib( PBranchSection::BASE_SEED, data(n).data[PBranchSection::HEAD_SEED] );
 		data(n->branch[b]).setAttrib( PBranchSection::PREV_SEED, data(n).data[PBranchSection::BASE_SEED] );
 		data(n->branch[b]).setAttrib( PBranchSection::HEAD_SEED, glm::linearRand( 0.0, 1.0 ) );
-		n->branch[b]->max_radius *= glm::max( n->branch[b]->max_radius, n->max_radius * 0.7f );
+		n->branch[b]->max_radius *= glm::max( /*n->branch[b]->max_radius*/ 0.05f, n->max_radius * 0.8f );
 		n->branch[b]->up = offset;
 		
 	}
@@ -554,17 +615,58 @@ PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatim
 }
 
 void
-PTree::growLeafs() {
+PTree::growLeafs( float deltatime ) {
 
 	std::list<Leaf*>::iterator it;
 	for( it = leafs.begin(); it != leafs.end(); it ++ ) {
 		Leaf* l = (*it);
-		/* Sync with parent position */
-		glm::vec3 base = data(l->parent).attribVector( PBranchSection::HEAD );
-		data(l).setAttrib( PLeaf::BASE, base );
-		data(l).setAttrib( PLeaf::TIP, base + glm::normalize( l->parent->up ) * 0.4f );
-		data(l).setAttrib( PLeaf::UP, glm::cross( data(l->parent).attribVector( PBranchSection::HEAD ),
-		 data(l->parent).attribVector( PBranchSection::BASE ) ) );
+		/* Sync with parent position, only if we're still attached :-) */
+		if( season == SEASON_SPRING || season == SEASON_SUMMER ) {
+			glm::vec3 base = data(l->parent).attribVector( PBranchSection::HEAD );
+			glm::vec3 tip = data(l).attribVector( PLeaf::TIP );
+			
+			/* Account for the latest growth of our parent */
+			tip += l->parent->last_growth;
+			
+			/* Grow depending on size */
+			if( data(l).length() < 0.07f )
+				tip += glm::normalize( l->parent->up ) * 0.25f * deltatime;
+				
+			data(l).setAttrib( PLeaf::BASE, base );
+			data(l).setAttrib( PLeaf::TIP, tip );
+			data(l).setAttrib( PLeaf::UP, glm::cross( data(l->parent).attribVector( PBranchSection::HEAD ),
+			 data(l->parent).attribVector( PBranchSection::BASE ) ) );
+		}
+		else
+			l->parent->leaf =0;
+		
+		if( season == SEASON_AUTUMN ) {
+			
+			/* Let's fall, determine the down direction first */
+			glm::vec3 down = glm::normalize( -m_up + m_wind_dir );
+			
+			/* Only fall if not on the ground already */			
+			if( glm::any( glm::greaterThan( data(l).attribVector( PLeaf::BASE ) * m_up, glm::vec3(0.0f) ) ) ) {
+			
+				/* Take acceleration into account */
+				l->speed += gravity * deltatime;
+			
+				glm::vec3 base = data(l).attribVector( PLeaf::BASE ) + down * l->speed * deltatime;
+				glm::vec3 tip = data(l).attribVector( PLeaf::TIP ) + down * l->speed * deltatime;
+			
+				data(l).setAttrib( PLeaf::BASE, base );
+				data(l).setAttrib( PLeaf::TIP, tip );
+			}
+		
+		} else if ( season == SEASON_WINTER ) {
+			float width = data(l).data[ PLeaf::WIDTH ];
+			glm::vec3 base = data(l).attribVector( PLeaf::BASE );
+			glm::vec3 tip = data(l).attribVector( PLeaf::TIP );
+			data(l).setAttrib( PLeaf::WIDTH, glm::max( 0.0f, width - deltatime * 0.5f ) );
+			data(l).setAttrib( PLeaf::TIP, base * 0.01f + tip * 0.99f );
+			data(l).setAttrib( PLeaf::BASE, base * 0.99f + tip * 0.01f );
+			
+		}
 		
 	}
 
@@ -579,15 +681,12 @@ PTree::createNode( int level ) {
 	n->level =level;
 	n->max_length = glm::linearRand( constraints[level].min_length, constraints[level].max_length );
 	n->max_radius = glm::linearRand( constraints[level].min_radius, constraints[level].max_radius );
-	n->curve = glm::ballRand( constraints[level].max_curvature );
+	n->curve = glm::ballRand( constraints[level].max_curvature ) + glm::vec3(0.01f);
 	n->max_branches = glm::linearRand( 1.0, 3.4 );
 	n->max_extensions = glm::linearRand( constraints[level].min_extensions, constraints[level].max_extensions );
 	
 	data(n).setAttrib( PBranchSection::SECTIONS, constraints[level].sections );
 	data(n).setAttrib( PBranchSection::STEPS, constraints[level].steps );
-	//data(n).setAttrib( PBranchSection::HEAD_SEED, glm::linearRand( 0.0, 0.25 ) );
-	
-	printf( "PTree: new level %d node\n", level );
 	
 	return n;
 }
@@ -599,8 +698,9 @@ PTree::createLeaf( Node* parent ) {
 	int i =geom.append( PLeaf() );
 	l->index =i;
 	l->parent =parent;
+	l->speed =0;
 	
-	data(l).setAttrib( PLeaf::WIDTH, 0.1 );
+	data(l).setAttrib( PLeaf::WIDTH, 0.15 );
 	data(l).setAttrib( PLeaf::CONCAVITY, 0.01 );
 	data(l).setAttrib( PLeaf::NUM_LEAFS, 5 );
 	

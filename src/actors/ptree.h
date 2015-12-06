@@ -92,7 +92,10 @@ class PTreeGeometry : public Geometry {
 		PBranchSection& branchAt( int index );
 		PLeaf& leafAt( int index );
 		
+		void clearLeafs();
+		
 		void updateBuffers();
+		void preRender( int n =0 );
 		
 		size_t branchCount() const;
 		size_t leafCount() const;
@@ -117,6 +120,8 @@ class PTreeGeometry : public Geometry {
 		GLuint vbo_branches;
 		GLuint vbo_leafs;
 		GLuint m_vao_leafs;
+		GLuint tex_diffuse1, tex_diffuse2;
+		GLuint tex_normal;
 		
 		std::vector<PBranchSection> branches;
 		std::vector<PLeaf> leafs;
@@ -140,6 +145,12 @@ class PTree : public Actor {
 	private:
 		enum Constants {
 			MAX_LEVEL =4
+		};
+		enum Season {
+			SEASON_SPRING,
+			SEASON_SUMMER,
+			SEASON_AUTUMN,
+			SEASON_WINTER
 		};
 		class Constraint {
 			public:
@@ -187,12 +198,13 @@ class PTree : public Actor {
 		class Leaf {
 			public:
 				int index;
+				float speed;
 				
 				Node *parent;
 		};
 		
 		void growRecursive( Node* parent, Node* n, int extension_count, float deltatime );
-		void growLeafs();
+		void growLeafs( float deltatime );
 		PBranchSection &data( Node* );
 		PLeaf &data( Leaf* );
 		Node *createNode( int level );
@@ -205,6 +217,11 @@ class PTree : public Actor {
 		glm::vec3 m_wind_dir;
 		float m_wind_freq_theta;
 		float m_wind_theta;
+		
+		int season;
+		float season_time;
+		float time_per_season;
+		float gravity;
 		
 		std::list<Leaf*> leafs;
 };

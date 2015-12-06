@@ -1,7 +1,7 @@
 #version 330 core
 
 layout(lines_adjacency) in;
-layout (triangle_strip, max_vertices=113) out;
+layout (triangle_strip, max_vertices=78) out;
 
 /* Engine default uniforms */
 uniform mat4 mat_model;
@@ -14,11 +14,13 @@ const vec3 up = vec3( 0, 1, 0 );
  
 in VS_OUT {
     vec3 param;
+   // mat3 mat_normal;
 } gs_in[4];
  
 out GS_OUT {
     vec3 normal;
-    vec2 texCoords;
+    vec3 texCoords;
+    vec3 tangent;
 } gs_out;
 
 int sections = 6;
@@ -52,10 +54,11 @@ float roughness( float r_step, int i, float radius, float rough ) {
 }
 
 void
-emitAndMult( vec3 v, vec3 n, vec2 t ) {
+emitAndMult( vec3 v, vec3 n, vec3 uv, vec3 t ) {
 	gs_out.normal = mat3(mat_model) * n;
-	gs_out.texCoords = t;
+	gs_out.texCoords = uv;
 	gl_Position = mat_projection * mat_view * mat_model * vec4( v, 1 );
+	gs_out.tangent =mat3(mat_model) * t;
 	EmitVertex();
 }
 
@@ -66,6 +69,10 @@ displace( vec3 v, float seed ) {
 	vec3 v2 = wind_2 * factor;
 	
 	return v + ( v1 * (1.0 - seed) + v2 * abs(seed) );
+}
+
+float blendFactor( float radius ) {
+	return clamp( sqrt(radius)*4, 0.0, 1.0 );
 }
 
 void 
@@ -83,7 +90,7 @@ main() {
 			SECTIONS,		STEPSIZE,			PREV_SEED
 			*/
 	
-	float base_radius = gs_in[0].param.x;
+	float base_radius = max( gs_in[0].param.x, 0.01);
 	float base_rough = gs_in[0].param.y;
 	float base_seed = gs_in[0].param.z;
 	float prev_seed = gs_in[3].param.z;
@@ -95,6 +102,7 @@ main() {
 	vec3 prev = displace( gl_in[0].gl_Position.xyz, prev_seed );
 	vec3 base = displace( gl_in[1].gl_Position.xyz, base_seed );
 	vec3 head = displace( gl_in[2].gl_Position.xyz, head_seed );
+	
 	vec3 next = gl_in[3].gl_Position.xyz;
 	
 	vec3 curve = (base+head) / 2 + gs_in[2].param;
@@ -112,13 +120,17 @@ main() {
 	
 	vec3 v1, v2, n1, n2, n1a, n2a;
 	mat3 rot1, rot2;
-	vec2 t1 =vec2(0), t2;
+	vec3 t1, t2;
+	float tex_u, tex_v1, tex_v2 =1.0;
+	float blend1, blend2;
 	
 	v2 = base;
 	rot2 = rotationMatrix( base - prev, r_step );
 	n2a = normalize( cross( base - prev, vec3(0.1,0.1,0.1) ) ) * base_radius;
 	radius2 = base_radius;
 	rough2 = base_rough;
+	t2 =base - prev;
+	blend2 = blendFactor( base_radius );
 		
 	for( float t =l_step; t <= 1.0; t += l_step ) {
 	
@@ -127,6 +139,11 @@ main() {
 		n1a = n1 = n2a;
 		radius1 = radius2;
 		rough1 = rough2;
+		t1 = t2;
+		tex_v1 = tex_v2;
+		blend1 = blend2;
+		
+		tex_v2 = 1.0 - t;
 		
 		if( t == 1.0 ) {
 			v2 = head;
@@ -142,41 +159,42 @@ main() {
 			n2a = n2 = normalize( cross( v2 - v1, vec3(0.1,0.1,0.1) ) ) * radius2;
 		}	
 	
+		t2 = v2 - v1;
+		blend2 = blendFactor( radius2 );
+		
 		for( int i =0; i < sections; i++ ) {
 		
+			tex_u = 1.0 - float(i) / float(sections);
 		
-			emitAndMult( v1 + n1 * roughness( r_step, i, radius1, rough1), n1, t1 );
-			emitAndMult( v2 + n2 * roughness( r_step, i, radius2, rough2), n2, t1 );
+			emitAndMult( 
+				v1 + n1 * roughness( r_step, i, radius1, rough1), 
+				n1, 
+				vec3( tex_u, tex_v1, blend1 ),
+				t1 );
+			emitAndMult( 
+				v2 + n2 * roughness( r_step, i, radius2, rough2), 
+				n2, 
+				vec3( tex_u, tex_v2, blend2 ), 
+				t2 );
+			
+			
 			
 			n1 = rot1 * n1;
 			n2 = rot2 * n2;
 		}
 			
-		emitAndMult( v1 + n1a * roughness( r_step, 0, radius1, rough1), n1a, t1 );
-		emitAndMult( v2 + n2a * roughness( r_step, 0, radius2, rough2), n2a, t1 );
+		emitAndMult( 
+			v1 + n1a * roughness( r_step, 0, radius1, rough1), 
+			n1a, 
+			vec3( 0.0, tex_v1, blend1 ),
+			t1 );
+		emitAndMult( 
+			v2 + n2a * roughness( r_step, 0, radius2, rough2), 
+			n2a, 
+			vec3( 0.0, tex_v2, blend2 ),
+			t2 );
 		
 		EndPrimitive();
 	}
-	
-/*	v1 = v2;
-	rot1 = rot2;
-	n1a = n1 = n2a;
-	radius1 = radius2;
-	rough1 = rough2;
-	
-	
 
-	for( int i =0; i < sections; i++ ) {
-	
-		emitAndMult( v1 + n1 * roughness( r_step, i, radius1, rough1), n1, t1 );
-		emitAndMult( v2 + n2 * roughness( r_step, i, radius2, rough2), n2, t1 );
-		
-		n1 = rot1 * n1;
-		n2 = rot2 * n2;
-	}
-	
-	emitAndMult( v1 + n1a * roughness( r_step, 0, radius1, rough1), n1a, t1 );
-	emitAndMult( v2 + n2a * roughness( r_step, 0, radius2, rough2), n2a, t1 );
-	
-	EndPrimitive();*/
 }

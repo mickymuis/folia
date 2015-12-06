@@ -57,6 +57,8 @@ class Geometry {
 		virtual GLsizei size( int n = 0 ) const { return m_size; } 
 		virtual bool renderDeferred( int n = 0 ) const { return false; }
 		
+		virtual void preRender( int n =0 ) { }
+		
 	protected:
 		GLuint m_vao;
 		ShaderProgram* m_program;

@@ -11,9 +11,12 @@ uniform mat4 mat_projection;
 
 out VS_OUT {
 	vec3 param;
+//	mat3 mat_normal; 	
 } vs_out;
 
 void main() {
 	vs_out.param =in_param;
 	gl_Position = vec4(in_position.x,in_position.y, in_position.z, 1.0);
+	
+	//vs_out.mat_normal = transpose(inverse(mat3(mat_modelview)));
 }

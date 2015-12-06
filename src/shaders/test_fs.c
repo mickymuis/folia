@@ -3,14 +3,14 @@
 layout (location = 0) out vec4 diffuse_spec_out; 
 layout (location = 1) out vec3 normal_out; 
 
-/*in VS_OUT {
+in VS_OUT {
 	vec3 normal;
-} fs_in;*/
+} fs_in;
 
-in GS_OUT {
+/*in GS_OUT {
     vec3 normal;
     vec3 color;
-} fs_in;
+} fs_in;*/
 
 void main() {
 	

@@ -1,3 +1,4 @@
+#define GLM_SWIZZLE
 #include "../common/platform.h"
 #include "engine.h"
 #include "window.h"
@@ -144,7 +145,8 @@ Engine::draw( Viewport* viewport ) {
 		m_gbuffer.initialize( *viewport );
 	
 	m_gbuffer.bindForWriting();	
-	glClearColor( viewport->background.r, viewport->background.g, viewport->background.b, viewport->background.a );
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	//glClearColor( viewport->background.r, viewport->background.g, viewport->background.b, viewport->background.a );
 	glClear( GL_COLOR_BUFFER_BIT );
 	glClear( GL_DEPTH_BUFFER_BIT );
 	
@@ -157,32 +159,49 @@ Engine::draw( Viewport* viewport ) {
 	
 	// Deferred lighting pass
 	
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE);
-	
+		
 	GLuint p =m_screen.program()->programHandle();
 	glUseProgram( p );
 	
 	glBindVertexArray( m_screen.vao() );
 	
 	m_gbuffer.bindForReading();
-	glClearColor( 0,0,0,1 );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	
-	glm::mat4x4 matscreentoworld= glm::inverse( matprojection * matview );
+	glm::mat4x4 matwindowtoview= glm::inverse( matprojection );
 	
-	glUniform3fv( glGetUniformLocation(p, "view_position"), 1, glm::value_ptr(cam->position()) );
-	glUniformMatrix4fv(glGetUniformLocation(p, "mat_screentoworld"), 1, GL_FALSE, glm::value_ptr(matscreentoworld));
+	glm::vec3 view_position = glm::vec3(matview * glm::vec4(cam->position(), 1 ) );
+//	glm::vec3 view_position = cam->position();
+	
+	glUniform3fv( glGetUniformLocation(p, "view_position"), 1, glm::value_ptr( view_position ) );
+	glUniformMatrix4fv(glGetUniformLocation(p, "mat_windowtoview"), 1, GL_FALSE, glm::value_ptr(matwindowtoview));
+	glUniformMatrix4fv(glGetUniformLocation(p, "mat_view"), 1, GL_FALSE, glm::value_ptr( matview ));
 	
 	const std::vector<Light*> &lights =z->lights();
 	for( int i =0; i < lights.size(); i++ ) {
 	
 		Light* l =lights[i];
+		glm::vec3 light_position = glm::vec3(matview * glm::vec4(l->transform().position(), 1 ));
+//		glm::vec3 light_position =l->transform().position();
+
+		glm::vec3 light_direction;
+		if( l->type() == Light::LIGHT_POINT )
+			light_direction =glm::vec3(0);
+		else
+			light_direction =glm::vec3(matview * glm::vec4(l->direction(), 0 ));
+			
+		glm::vec3 light_attenuation = glm::vec3( 1.0f,
+			l->linearAttenuation(),
+			l->quadraticAttenuation() );
 		
-		glUniform3fv( glGetUniformLocation(p, "light_position"), 1, glm::value_ptr(l->transform().position()) );
-		glUniform3fv( glGetUniformLocation(p, "light_intensity"), 1, glm::value_ptr(l->intensity()) );
+		glUniform3fv( glGetUniformLocation(p, "light_position"), 1, glm::value_ptr( light_position ) );
+		glUniform3fv( glGetUniformLocation(p, "light_direction"), 1, glm::value_ptr( light_direction ) );
+		glUniform3fv( glGetUniformLocation(p, "light_intensity"), 1, glm::value_ptr( l->intensity()) );
+		glUniform3fv( glGetUniformLocation(p, "light_attenuation"), 1, glm::value_ptr( light_attenuation ) );
 		
 		render( &m_screen, 0 );
 		
@@ -265,9 +284,11 @@ Engine::renderQueue( const RenderQueue& queue, glm::mat4 matview, glm::mat4x4 ma
 			if( program ) {
 				GLuint p =program->programHandle();
 				glUseProgram( p );
+				
+				glm::mat4x4 matmodelview =matview * tuple.matmodel;
 	
-				glUniformMatrix4fv(glGetUniformLocation(p, "mat_model"), 1, GL_FALSE, glm::value_ptr(tuple.matmodel));
-				glUniformMatrix4fv(glGetUniformLocation(p, "mat_view"), 1, GL_FALSE, glm::value_ptr(matview));
+				glUniformMatrix4fv(glGetUniformLocation(p, "mat_model"), 1, GL_FALSE, glm::value_ptr( tuple.matmodel ));
+				glUniformMatrix4fv(glGetUniformLocation(p, "mat_view"), 1, GL_FALSE, glm::value_ptr( matview ));
 				glUniformMatrix4fv(glGetUniformLocation(p, "mat_projection"), 1, GL_FALSE, glm::value_ptr(matprojection));
 			}
 		
@@ -281,6 +302,7 @@ void
 Engine::render( Geometry* g, int i ) {
 
 	glBindVertexArray( g->vao(i) );
+	g->preRender( i );
 	glDrawArrays( g->type(i), g->first(i), g->size(i) );
 }
 

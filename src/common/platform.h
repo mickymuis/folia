@@ -3,6 +3,7 @@
 
 #define PATH_SEPARATOR "/"
 #define SHADER_DIR_NAME "shaders"
+#define TEXTURE_DIR_NAME "textures"
 
 #define GLEW_STATIC
 #define _USE_MATH_DEFINES

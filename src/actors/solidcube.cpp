@@ -88,7 +88,7 @@ SolidCubeGeometry::SolidCubeGeometry() {
 	
 	ShaderSource src;
 	src.addSource( VERTEX_SHADER, "test" );
-	src.addSource( GEOMETRY_SHADER, "passthrough" );
+	//src.addSource( GEOMETRY_SHADER, "passthrough" );
 	src.addSource( FRAGMENT_SHADER, "test" );
 	m_program = src.createProgram();
 

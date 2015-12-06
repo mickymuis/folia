@@ -87,7 +87,7 @@ void main() {
 		vec3 curve = (base + (tip-base) / 2.0 * roundness ) +  s * normalize( cross( up-tip, up-base ) ) * width + up * (concavity+0.01);
 		vec2 t1 = vec2(0);
 	
-		for( float t =0; t < 1.0; t += 0.5 ) {
+		for( float t =0; t < 1.0; t += 0.2 ) {
 			vec3 v1 = bezier2( t, base, base, tip );
 			vec3 v2 = bezier2( t, base, curve, tip );
 		

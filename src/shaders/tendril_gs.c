@@ -15,8 +15,7 @@ layout(triangles) in;
 layout (triangle_strip, max_vertices=146) out;
 
 /* Engine default uniforms */
-uniform mat4 mat_model;
-uniform mat4 mat_view;
+uniform mat4 mat_modelview;
 uniform mat4 mat_projection;
  
 in VS_OUT {
@@ -47,8 +46,8 @@ void
 emitAndMult( vec3 v, vec3 n ) {
 	
 //	gs_out.color =COLOR;
-  gs_out.normal =mat3(mat_model) * n;
-	gl_Position =mat_projection * mat_view * mat_model * vec4(v.x,v.y, v.z, 1.0);
+  gs_out.normal =mat3(mat_modelview) * n;
+	gl_Position =mat_projection * mat_modelview * vec4(v.x,v.y, v.z, 1.0);
 	
 	EmitVertex();
 }

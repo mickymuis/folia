@@ -15,8 +15,8 @@ out VS_OUT {
 
 void main() {
 
-	vs_out.normal =/*mat3(mat_model) */ in_normal;
+	vs_out.normal =mat3(mat_model) * in_normal;
 	
-	gl_Position = /*mat_projection * mat_view * mat_model **/ vec4(in_position.x,in_position.y, in_position.z, 1.0);
+	gl_Position = mat_projection * mat_view * mat_model * vec4(in_position.x,in_position.y, in_position.z, 1.0);
 
 }
