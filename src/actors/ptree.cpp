@@ -676,7 +676,7 @@ PTree::growLeafs( float deltatime ) {
 			tip += l->parent->last_growth;
 			
 			/* Grow depending on size */
-			if( data(l).length() < 0.07f )
+			if( data(l).length() < 0.09f )
 				tip += glm::normalize( l->parent->up ) * 0.25f * deltatime;
 				
 			data(l).setAttrib( PLeaf::BASE, base );
