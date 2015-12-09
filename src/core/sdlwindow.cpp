@@ -51,7 +51,7 @@ SDLWindow::createWindow()
                           SDL_WINDOWPOS_UNDEFINED,
                           SDL_WINDOWPOS_UNDEFINED,
                           width, height,
-                          SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN)) == NULL)
+                          SDL_WINDOW_OPENGL /*| SDL_WINDOW_FULLSCREEN*/)) == NULL)
 	{
         return false;
     }

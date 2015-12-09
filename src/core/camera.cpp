@@ -12,6 +12,8 @@ Camera::Camera( glm::vec3 position, glm::vec3 target, double fov ) {
 	camera_position_delta = glm::vec3(0, 0, 0);
 	camera_position =position;
 	camera_target =target;
+	camera_pitch =0.0f;
+	camera_heading =0.0f;
 	max_pitch_rate = 5;
 	max_heading_rate = 5;
 	near_clip =0.1;

@@ -1,7 +1,7 @@
 #version 330 core
 
 layout(lines_adjacency) in;
-layout (line_strip, max_vertices=113) out;
+layout (line_strip, max_vertices=78) out;
 
 /* Engine default uniforms */
 uniform mat4 mat_model;

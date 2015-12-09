@@ -43,7 +43,7 @@ TreeScene::TreeScene( Zone* parent, Camera *c ) : Actor( parent), camera( c ) {
 	halos->setProgram( src.createProgram() );
 	
 	
-	for( int i =0; i < 7; i++ ) {
+	for( int i =0; i < 5; i++ ) {
 
 		Light *l = new Light( parent );
 		//l->setIntensity( glm::sphericalRand( 0.5f ) + glm::vec3(0.5) );
