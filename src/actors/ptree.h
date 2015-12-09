@@ -93,6 +93,7 @@ class PTreeGeometry : public Geometry {
 		PLeaf& leafAt( int index );
 		
 		void clearLeafs();
+		void clearBranches();
 		
 		void updateBuffers();
 		void preRender( int n =0 );
@@ -104,6 +105,8 @@ class PTreeGeometry : public Geometry {
 		void setWind( glm::vec3, glm::vec3 );
 		
 		void setLeafMode( LeafMode );
+		
+		void setWireMode( bool );
 		
 		int bufferCount() const { return 2; }
 		
@@ -129,6 +132,8 @@ class PTreeGeometry : public Geometry {
 		
 		LeafMode leaf_mode;
 		
+		ShaderProgram *m_wireProgram;
+		ShaderProgram *m_branchProgram;
 		ShaderProgram *m_leafProgram;
 		ShaderProgram *m_blossomProgram;
 };
@@ -137,6 +142,10 @@ class PTree : public Actor {
 	public:
 		PTree( Object* parent );
 		~PTree();
+		
+		void setWireMode( bool );
+		void reinitialize();
+		
 		Geometry* geometry(int n =0);
 		int geometryCount() { return 1; }
 		
@@ -203,6 +212,7 @@ class PTree : public Actor {
 				Node *parent;
 		};
 		
+		void cleanupRecursive( Node* );
 		void growRecursive( Node* parent, Node* n, int extension_count, float deltatime );
 		void growLeafs( float deltatime );
 		PBranchSection &data( Node* );

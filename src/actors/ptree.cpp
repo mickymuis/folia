@@ -100,9 +100,10 @@ PTreeGeometry::PTreeGeometry() {
 	/* Shader for branches */
 	ShaderSource src1;
 	src1.addSource( VERTEX_SHADER, "ptree" );
+	//src1.addSource( GEOMETRY_SHADER, "ptree_wire" );
 	src1.addSource( GEOMETRY_SHADER, "ptree_branch" );
 	src1.addSource( FRAGMENT_SHADER, "ptree_branch" );
-	m_program = src1.createProgram();
+	m_program = m_branchProgram = src1.createProgram();
 	
 	/* Shader for leafs */
 	ShaderSource src2;
@@ -117,6 +118,13 @@ PTreeGeometry::PTreeGeometry() {
 	src3.addSource( GEOMETRY_SHADER, "ptree_blossom" );
 	src3.addSource( FRAGMENT_SHADER, "ptree_blossom" );
 	m_blossomProgram = src3.createProgram();
+	
+	/* Shader for branches */
+	ShaderSource src4;
+	src4.addSource( VERTEX_SHADER, "ptree" );
+	src4.addSource( GEOMETRY_SHADER, "ptree_wire" );
+	src4.addSource( FRAGMENT_SHADER, "ptree_branch" );
+	m_wireProgram = src4.createProgram();
 	
 	wind_1 = wind_2 = glm::vec3(0);
 
@@ -163,6 +171,11 @@ PTreeGeometry::leafCount() const {
 void 
 PTreeGeometry::clearLeafs() {
 	leafs.clear();
+}
+
+void 
+PTreeGeometry::clearBranches() {
+	branches.clear();
 }
 
 void 
@@ -287,6 +300,14 @@ PTreeGeometry::setWind( glm::vec3 w1, glm::vec3 w2 ) {
 void 
 PTreeGeometry::setLeafMode( LeafMode m ) {
 	leaf_mode =m;
+}
+
+void 
+PTreeGeometry::setWireMode( bool w ) {
+	if( w )
+		m_program =m_wireProgram;
+	else
+		m_program =m_branchProgram;
 }
 
 GLuint 
@@ -419,6 +440,32 @@ PTree::PTree( Object* parent ) : Actor( parent ) {
 PTree::~PTree() {
 }
 
+void 
+PTree::setWireMode( bool w ) {
+	geom.setWireMode( w );
+}
+
+void 
+PTree::reinitialize() {
+
+	std::list<Leaf*>::iterator it;
+	for( it = leafs.begin(); it != leafs.end(); it ++ )
+		delete (*it);
+	leafs.clear();
+	geom.clearLeafs();
+	
+	cleanupRecursive( root );
+	geom.clearBranches();
+	
+	root =createNode(0);
+	root->up = m_up;
+	root->max_branches =0;
+	season =SEASON_SPRING;
+	season_time =0;
+	
+	geom.updateBuffers();
+}
+
 Geometry* 
 PTree::geometry( int ) {
 	return &geom;
@@ -537,7 +584,7 @@ PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatim
 			data(n->extension).setAttrib( PBranchSection::PREV_SEED, data(n).data[PBranchSection::BASE_SEED] );
 			data(n->extension).setAttrib( PBranchSection::HEAD_SEED, data(n).data[PBranchSection::HEAD_SEED] );
 
-			n->extension->max_radius = glm::max( n->max_radius * 0.8f, 0.05f );
+			n->extension->max_radius = glm::max( n->max_radius * 0.85f, 0.05f );
 			n->extension->max_extensions =n->max_extensions;
 			n->extension->up = branch_up;
 		} else if( !n->leaf ) {
@@ -670,6 +717,19 @@ PTree::growLeafs( float deltatime ) {
 		
 	}
 
+}
+
+void 
+PTree::cleanupRecursive( Node* n ) {
+
+	if( !n )
+		return;
+		
+	cleanupRecursive( n->extension );
+	for( int i =0; i < n->branches; i++ )
+		cleanupRecursive( n->branch[i] );
+		
+	delete n;
 }
 
 PTree::Node*

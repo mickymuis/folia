@@ -4,7 +4,8 @@ layout(lines_adjacency) in;
 layout (line_strip, max_vertices=113) out;
 
 /* Engine default uniforms */
-uniform mat4 mat_modelview;
+uniform mat4 mat_model;
+uniform mat4 mat_view;
 uniform mat4 mat_projection;
 
 uniform vec3 wind_1;
@@ -17,7 +18,8 @@ in VS_OUT {
  
 out GS_OUT {
     vec3 normal;
-    vec2 texCoords;
+    vec3 texCoords;
+    vec3 tangent;
 } gs_out;
 
 mat3 
@@ -46,9 +48,10 @@ bezier2(
 
 void
 emitAndMult( vec3 v, vec3 n, vec2 t ) {
-	gs_out.normal = mat3(mat_modelview) * n;
-	gs_out.texCoords = t;
-	gl_Position = mat_projection * mat_modelview * vec4( v, 1 );
+	gs_out.normal = mat3(mat_model) * n;
+	gs_out.texCoords = vec3(t, 0.0);
+	gs_out.tangent = vec3(0,1,0);
+	gl_Position = mat_projection * mat_model * mat_view * vec4( v, 1 );
 	EmitVertex();
 }
 

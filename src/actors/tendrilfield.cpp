@@ -49,8 +49,6 @@ TendrilGeometry::TendrilGeometry() {
 	src.addSource( VERTEX_SHADER, "tendril" );
 	src.addSource( GEOMETRY_SHADER, "tendril" );
 	src.addSource( FRAGMENT_SHADER, "tendril" );
-//	src.addSource( VERTEX_SHADER, "test" );
-//	src.addSource( FRAGMENT_SHADER, "test" );
 	
 	m_program = src.createProgram();
 
@@ -103,10 +101,7 @@ TendrilGeometry::initBuffers() {
 	glGenBuffers(1, &vbo_position);
 	//glGenBuffers(1, &vbo_param);
 	
-	updateBuffers();
-	
-	
-	
+	updateBuffers();	
 }
 
 void

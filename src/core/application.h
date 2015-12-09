@@ -20,6 +20,9 @@ class Application {
 		static Application* app() { return Application::instance; }
 		
 		typedef std::vector<Window*> WindowList;
+		
+		// HACK
+		char m_key;
 
 	protected:
 		virtual void newWindow( Window* ) = 0;

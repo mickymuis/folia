@@ -11,13 +11,14 @@ class GBuffer {
 			DEPTH_TEXTURE,
 			DIFFUSE_SPEC_TEXTURE,
 			NORMAL_TEXTURE,
+			POSITION_TEXTURE,
 			NUM_TEXTURES
 		};
 		
 		GBuffer();
 		~GBuffer();
 		
-		bool initialize( const Viewport& );
+		bool initialize( const Viewport&, bool multisample, int samples );
 		void destroy();
 		
 		void bindForReading();
@@ -32,6 +33,7 @@ class GBuffer {
 		GLuint m_textures[NUM_TEXTURES];
 		int m_width;
 		int m_height;
+		bool m_multisample;
 	
 };
 

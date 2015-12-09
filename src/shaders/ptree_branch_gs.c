@@ -72,7 +72,7 @@ displace( vec3 v, float seed ) {
 }
 
 float blendFactor( float radius ) {
-	return clamp( sqrt(radius)*4, 0.0, 1.0 );
+	return clamp( radius * 6, 0.0, 1.0 );
 }
 
 void 

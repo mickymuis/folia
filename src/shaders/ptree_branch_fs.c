@@ -10,6 +10,7 @@ in GS_OUT {
 
 layout (location = 0) out vec4 diffuse_spec_out; 
 layout (location = 1) out vec3 normal_out;
+layout (location = 2) out vec4 position_out;
 
 uniform sampler2D tex_diffuse1;
 uniform sampler2D tex_diffuse2;
@@ -30,8 +31,8 @@ void main() {
 	normal = normalize(normal * 2.0 - 1.0);   
 	normal = normalize(TBN * normal);
 	
-	normal_out = normalize( normal *blendFactor + fs_in.normal * (1.0-blendFactor) );
-	//normal_out =normal;
+	//normal_out = normalize( normal *blendFactor + fs_in.normal * (1.0-blendFactor) );
+	normal_out =normal;
 	
 	//normal_out =normalize(fs_in.normal);
   //diffuse_spec_out =vec4( 0.0, 1.0, 0.0, 0.2 );
@@ -40,5 +41,6 @@ void main() {
   	+ texture( tex_diffuse1, fs_in.texCoords.xy ).rgb * (1.0-blendFactor) );
   	
   diffuse_spec_out =vec4( color, 0.2 );
+  position_out =gl_FragCoord;
 	
 }

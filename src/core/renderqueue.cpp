@@ -32,6 +32,8 @@ RenderQueue::rebuild( /*glm::mat4 viewmatrix*/ ) {
 		if( o->isA( Actor::TYPE ) ) {
 			Actor *actor = reinterpret_cast<Actor*>(o);
 			
+			if( !actor->isVisible() )
+				continue;
 			if( actor->geometry() ) {
 				for( int i =0; i < actor->geometryCount(); i++ ) {
 					RenderQueueTuple tuple;

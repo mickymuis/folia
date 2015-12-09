@@ -13,7 +13,7 @@ class Light : public Object {
 			LIGHT_DIRECTIONAL,
 			LIGHT_POINT
 		};
-		Light( Zone* parent ) : Object( parent ) {}
+		Light( Zone* parent ) : Object( parent ), m_visible( true ) {}
 		~Light() {}
 		
 		void setType( LightType t ) { m_type =t; }
@@ -29,6 +29,8 @@ class Light : public Object {
 		float linearAttenuation() const { return m_linear; }
 		float quadraticAttenuation() const { return m_quadratic; }
 		
+		void setVisible( bool b ) { m_visible =b; }
+		bool isVisible( ) const { return m_visible; }
 		
 		virtual int RTTI() const { return TYPE; }
 		
@@ -39,6 +41,7 @@ class Light : public Object {
 		glm::vec3 m_direction;
 		float m_linear;
 		float m_quadratic;
+		bool m_visible;
 };
 
 #endif

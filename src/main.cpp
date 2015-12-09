@@ -78,6 +78,7 @@ int main(int argc, char * argv[])
 	w.currentZone()->addLight( &light1 );*/
 	
 	TreeScene scene( w.currentZone(), &cam );
+	scene.transform().setPosition( glm::vec3(0) );
 	
 	app.run();
 

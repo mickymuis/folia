@@ -99,11 +99,14 @@ void SDLApplication::handleEvents()
 			{
 				//inputstate.keyspress[sdlevent.key.keysym.sym] = true;
 				//inputstate.keysdown[sdlevent.key.keysym.sym] = true;
+				
+				m_key = (char)sdlevent.key.keysym.sym ;
 			}
 		}
 		else if (sdlevent.type == SDL_KEYUP)
 		{
 			//inputstate.keysdown[sdlevent.key.keysym.sym] = false;
+				m_key =0;
 		}
 		/*else if (sdlevent.type == SDL_VIDEORESIZE)
 		{

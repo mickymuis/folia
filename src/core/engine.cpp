@@ -63,6 +63,7 @@ ScreenQuad::initialize() {
 	glUniform1i(glGetUniformLocation(m_program->programHandle(), "g_depth"), 0);
 	glUniform1i(glGetUniformLocation(m_program->programHandle(), "g_diffusespec"), 1);
   glUniform1i(glGetUniformLocation(m_program->programHandle(), "g_normal"), 2);
+  glUniform1i(glGetUniformLocation(m_program->programHandle(), "g_position"), 3);
   glUseProgram( 0 );
 	
 	return true;
@@ -80,7 +81,7 @@ Engine::Engine( int enable ) {
 	m_features =enable;
 	
 	initialize();
-	initFeatures();
+	//initFeatures();
 }
 
 Engine::~Engine() {
@@ -122,7 +123,7 @@ Engine::draw( Viewport* viewport ) {
 	if( !z )
 		return;
 		
-	preRender( viewport );
+	//preRender( viewport );
 	
 	// Setup camera matrices
 	
@@ -142,25 +143,34 @@ Engine::draw( Viewport* viewport ) {
 	// (Re)initialize the g-buffer
 	
 	if( m_gbuffer.width() != viewport->width || m_gbuffer.height() != viewport->height )
-		m_gbuffer.initialize( *viewport );
+		m_gbuffer.initialize( *viewport, true, 2 );
 	
-	m_gbuffer.bindForWriting();	
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	//glClearColor( viewport->background.r, viewport->background.g, viewport->background.b, viewport->background.a );
-	glClear( GL_COLOR_BUFFER_BIT );
-	glClear( GL_DEPTH_BUFFER_BIT );
 	
 	// Geometry pass
 	
+	m_gbuffer.bindForWriting();	
+	
 	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
+	//glEnable(GL_MULTISAMPLE);
+	
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+//	glClearDepth( 0.0f );
+	//glClearColor( viewport->background.r, viewport->background.g, viewport->background.b, viewport->background.a );
+	glClear( GL_COLOR_BUFFER_BIT );
+	glClear( GL_DEPTH_BUFFER_BIT );
 	
 	renderQueue( m_queue, matview, matprojection, DEFERRABLE );
 	
 	// Deferred lighting pass
 	
-	//glDisable(GL_DEPTH_TEST);
+	m_gbuffer.bindForReading();
+	
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
 	glEnable(GL_BLEND);
+	//glDisable(GL_MULTISAMPLE);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE);
 		
@@ -169,8 +179,8 @@ Engine::draw( Viewport* viewport ) {
 	
 	glBindVertexArray( m_screen.vao() );
 	
-	m_gbuffer.bindForReading();
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear( GL_COLOR_BUFFER_BIT /*| GL_DEPTH_BUFFER_BIT*/ );
 	
 	glm::mat4x4 matwindowtoview= glm::inverse( matprojection );
 	
@@ -185,6 +195,9 @@ Engine::draw( Viewport* viewport ) {
 	for( int i =0; i < lights.size(); i++ ) {
 	
 		Light* l =lights[i];
+		if( !l->isVisible() )
+			continue;
+			
 		glm::vec3 light_position = glm::vec3(matview * glm::vec4(l->transform().position(), 1 ));
 //		glm::vec3 light_position =l->transform().position();
 
@@ -209,6 +222,8 @@ Engine::draw( Viewport* viewport ) {
 	
 	// Forward render pass
 	
+	//glEnable( GL_MULTISAMPLE );
+	
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // Write to default framebuffer
 	glBlitFramebuffer(
 		0, 0, m_gbuffer.width(), m_gbuffer.height(), 0, 0, m_gbuffer.width(), m_gbuffer.height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST
@@ -216,7 +231,11 @@ Engine::draw( Viewport* viewport ) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_BLEND);
+	//glDepthMask(GL_TRUE);
+	
+	glEnable(GL_BLEND);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_ONE, GL_ONE);
 
 	renderQueue( m_queue, matview, matprojection, FORWARD_ONLY );
 
@@ -228,7 +247,7 @@ Engine::initFeatures() {
 	if( isEnabledFeature( FT_DEPTHBUFFER ) ) {
 		glDepthFunc( GL_LEQUAL );
 		glEnable( GL_DEPTH_TEST );
-		glClearDepth(1.0f);
+		//glClearDepth(1.0f);
 	
 	} else {
 		glDisable( GL_DEPTH_TEST );
