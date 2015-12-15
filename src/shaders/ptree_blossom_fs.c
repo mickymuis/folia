@@ -14,6 +14,6 @@ layout (location = 1) out vec3 normal_out;
 void main() {
 	
 	normal_out =normalize(fs_in.normal);
-  diffuse_spec_out =vec4( 0.9, 0.9, 0.9, 0.2 );
+  diffuse_spec_out =vec4( 1.0, 0.85, 0.8, 0.6 );
 	
 }

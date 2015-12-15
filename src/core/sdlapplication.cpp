@@ -1,3 +1,8 @@
+/*
+ * This file is part of Folia, an experimental mini-engine using OpenGL 3
+ * Created by Micky Faas. Freely usable and modifiable for academic purposes.
+ */
+
 #include "sdlapplication.h"
 #include "../common/platform.h"
 #include "../utils/shaderprogram.h"
@@ -78,10 +83,6 @@ SDLApplication::run() {
 
 void SDLApplication::handleEvents()
 {
-/*	int i;
-	for (i = 0; i < SDL_NUM_SCANCODES; ++i)
-		inputstate.keyspress[i] = false;*/
-
 	SDL_Event sdlevent;
 	while(SDL_PollEvent(&sdlevent))
 	{
@@ -97,21 +98,20 @@ void SDLApplication::handleEvents()
 			}
 			else
 			{
-				//inputstate.keyspress[sdlevent.key.keysym.sym] = true;
-				//inputstate.keysdown[sdlevent.key.keysym.sym] = true;
 				
-				m_key = (char)sdlevent.key.keysym.sym ;
+				/* TODO: improve */
+				char key = (char)sdlevent.key.keysym.sym ;
+				KeyPressEvent e( KeyPressEvent::KEY_CHARACTER, key );
+				emit( &e );
+				
 			}
 		}
 		else if (sdlevent.type == SDL_KEYUP)
 		{
-			//inputstate.keysdown[sdlevent.key.keysym.sym] = false;
-				m_key =0;
+
 		}
 		/*else if (sdlevent.type == SDL_VIDEORESIZE)
 		{
-			width = sdlevent.resize.w;
-			height = sdlevent.resize.h;
 		}*/
 	}
 }

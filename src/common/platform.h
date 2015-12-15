@@ -1,3 +1,8 @@
+/*
+ * This file is part of Folia, an experimental mini-engine using OpenGL 3
+ * Created by Micky Faas. Freely usable and modifiable for academic purposes.
+ */
+
 #define REQUIRE_GL_MAJOR_VERSION 3
 #define REQUIRE_GL_MINOR_VERSION 3
 

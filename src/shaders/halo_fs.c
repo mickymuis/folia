@@ -1,3 +1,9 @@
+/*
+ * This file is part of Folia, an experimental mini-engine using OpenGL 3
+ * Created by Micky Faas. Freely usable and modifiable for academic purposes.
+ */
+
+
 #version 330 core
 
 in GS_OUT {
@@ -5,7 +11,6 @@ in GS_OUT {
 } fs_in;
 
 /* Engine default fragment pass output */
-//layout (location = 0) 
 
 out vec4 fragColor; 
 

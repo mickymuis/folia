@@ -1,3 +1,8 @@
+/*
+ * This file is part of Folia, an experimental mini-engine using OpenGL 3
+ * Created by Micky Faas. Freely usable and modifiable for academic purposes.
+ */
+
 #define GLM_SWIZZLE
 #include "camera.h"
 #include "../utils/glm/glm.hpp"
@@ -139,118 +144,3 @@ Camera::orbit( float yaw, float pitch ) {
 	orbit_pitch +=pitch;
 }
 
-/*Camera::Camera()
-{
-    d.up = glm::vec3(0.0f,1.0f,0.0f);
-    d.far = 1000.0f;
-    d.near = 0.1f;
-    d.target = glm::vec3(0.0f,0.0f,0.0f);
-    d.position = glm::vec3(0.0f,3.0f,8.0f);
-    d.vertAngle = 45.0f;
-    d.aspect = 1.0f;
-
-
-    update( );
-}
-
-void Camera::lookAt( const glm::vec3 &eye, const glm::vec3 &target, const glm::vec3 &up)
-{
-    d.position = eye;
-    d.target = target;
-    d.up = up;
-
-}
-
-void Camera::setTarget( const glm::vec3 & target )
-{
-    d.target = target;
-}
-
-void Camera::setUp( const glm::vec3 & up )
-{
-    d.up = up;
-}
-
-void Camera::setAspect( float aspect )
-{
-    d.aspect = aspect;
-}
-
-void Camera::perspective( float fov, float near, float far )
-{
-    d.vertAngle = fov;
-    d.near = near;
-    d.far = far;
-}
-
-void Camera::orbit( float yaw, float pitch )
-{
-
-    d.yaw -= yaw;
-    d.pitch -= pitch;
-
-
-
-}
-
-void Camera::translate( const glm::vec3 &v )
-{
-    d.position -= v;
-
-}
-
-float Camera::fov() const
-{
-    return d.vertAngle;
-}
-
-void Camera::setFov( float fov )
-{
-   d.vertAngle = fov;
-}
-
-glm::mat4 &Camera::projectionMatrix( )
-{
-    return d.pmatrix;
-}
-
-const float *Camera::pMatrix( ) const
-{
-    return glm::value_ptr(d.pmatrix);
-}
-
-glm::mat4 &Camera::viewMatrix( )
-{
-    return d.vmatrix;
-
-}
-const float *Camera::vMatrix( ) const
-{
-    return glm::value_ptr(d.vmatrix);
-}
-
-void Camera::update( )
-{
-    d.pmatrix = glm::perspective( d.vertAngle, d.aspect, d.near, d.far );
-    d.vmatrix = glm::mat4(1.0);
-
-    glm::vec3 right( 1,0,0);
-    glm::vec4 up(0,1,0,0);
-    glm::vec3 position;
-    glm::mat4 yaw, pitch;
-
-    pitch =glm::rotate( pitch, d.pitch, up.xyz() );
-    yaw =glm::rotate( yaw, d.yaw, right );
-
-    up = up * yaw * pitch;
-
-    glm::vec3 translation =d.position;
-
-    position = d.target + (glm::vec4(translation,1.0) * yaw * pitch).xyz();
-
-    d.vmatrix = glm::lookAt( position, d.target, up.xyz());
-
-
-
-}
-*/

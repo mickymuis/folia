@@ -1,7 +1,9 @@
-/* 
- Camera.h
- Quaternion camera code adapted from: http://hamelot.co.uk/visualization/opengl-camera/
- Based on code by Hammad Mazhar, https://github.com/hmazhar/moderngl_camera
+/*
+ * This file is part of Folia, an experimental mini-engine using OpenGL 3
+ * Created by Micky Faas. Freely usable and modifiable for academic purposes.
+ *
+ * Quaternion camera code adapted from: http://hamelot.co.uk/visualization/opengl-camera/
+ * Based on code by Hammad Mazhar, https://github.com/hmazhar/moderngl_camera
  */
 
 #ifndef CAMERA_H
@@ -11,56 +13,6 @@
 #include "../utils/glm/vec3.hpp"
 #include "../utils/glm/mat4x4.hpp"
 #include "../utils/glm/gtc/quaternion.hpp"
-
-/*class Camera
-{
-public:
-    Camera();
-
-    void lookAt( const glm::vec3 &eye, const glm::vec3 &target, const glm::vec3 &up);
-    void setPosition( const glm::vec3 &p ) { d.position =p; }
-    glm::vec3 position() const { return d.position; }
-    void setTarget( const glm::vec3 & );
-    glm::vec3 target() const { return d.target; }
-    void setUp( const glm::vec3 & );
-    glm::vec3 up() const { return d.up; }
-    void setAspect( float );
-    float aspect() const { return d.aspect; }
-    void perspective( float fov, float near, float far );
-    void orbit( float yaw, float pitch );
-    void translate( const glm::vec3 & );
-    void setFov( float );
-
-    float fov( ) const;
-
-    glm::mat4 &projectionMatrix( );
-    const float *pMatrix( ) const;
-
-    glm::mat4 &viewMatrix( );
-    const float *vMatrix( ) const;
-
-    void update( );
-
-private:
-
-    class CameraPrivate
-    {
-    public:
-        float vertAngle;
-        float aspect;
-        glm::vec3 position;
-        glm::vec3 target;
-        glm::vec3 up;
-        glm::quat rotation;
-        float near;
-        float far;
-        glm::mat4 vmatrix;
-        glm::mat4 pmatrix;
-        float yaw, pitch, roll;
-
-    } d;
-
-};*/
 
 class Camera {
 	public:

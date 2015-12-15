@@ -1,4 +1,9 @@
-/**/
+/*
+ * This file is part of Folia, an experimental mini-engine using OpenGL 3
+ * Created by Micky Faas. Freely usable and modifiable for academic purposes.
+ */
+
+
 #include "../common/platform.h"
 #include "../core/application.h"
 #include "shadersource.h"

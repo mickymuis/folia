@@ -1,6 +1,12 @@
+/*
+ * This file is part of Folia, an experimental mini-engine using OpenGL 3
+ * Created by Micky Faas. Freely usable and modifiable for academic purposes.
+ */
+
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include "event.h"
 #include <vector>
 #include <string>
 
@@ -20,13 +26,17 @@ class Application {
 		static Application* app() { return Application::instance; }
 		
 		typedef std::vector<Window*> WindowList;
+		typedef std::vector<EventHandler*> EventHandlerList;
 		
-		// HACK
-		char m_key;
-
+		void attachEventHandler( EventHandler* );
+		void detachEventHandler( EventHandler* );
+		
+		void emit( Event* e );
+		
 	protected:
 		virtual void newWindow( Window* ) = 0;
 		WindowList window_list;
+		EventHandlerList handler_list;
 		bool running;
 		
 		static Application* instance;

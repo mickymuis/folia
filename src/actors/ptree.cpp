@@ -1,3 +1,8 @@
+/*
+ * This file is part of Folia, an experimental mini-engine using OpenGL 3
+ * Created by Micky Faas. Freely usable and modifiable for academic purposes.
+ */
+
 #include "ptree.h"
 #include "../utils/shaderprogram.h"
 #include "../utils/sdltextureloader.h"
@@ -354,67 +359,8 @@ PTreeGeometry::size( int n ) const {
 /* PTree implementation */
 
 PTree::PTree( Object* parent ) : Actor( parent ) {
-	
-	constraints[0].max_extensions = 12;	
-	constraints[0].min_extensions = 11;	
-	constraints[0].sections =12; // 16		
-	constraints[0].steps =3;
-	constraints[0].max_radius =1.0;
-	constraints[0].min_radius =0.5;
-	constraints[0].max_length =1.8;
-	constraints[0].min_length =1.0;
-	constraints[0].max_total_length =15.0;
-	constraints[0].max_curvature =0.5;				
-	constraints[0].max_rough =0.7;
-	constraints[0].max_growth_length =0.8;
-	constraints[0].max_growth_radius =0.04;
-	constraints[0].min_branch_distance =5;
-	
-	
-	constraints[1].max_extensions = 8;
-	constraints[1].min_extensions = 5;	
-	constraints[1].sections =8;	//
-	constraints[1].steps =4;
-	constraints[1].max_radius =0.3;
-	constraints[1].min_radius =0.1;
-	constraints[1].max_length =1.0;
-	constraints[1].min_length =0.5;
-	constraints[1].max_total_length =7.0;
-	constraints[1].max_curvature =0.15;				
-	constraints[1].max_rough =0.5;
-	constraints[1].max_growth_length =0.4;
-	constraints[1].max_growth_radius =0.04;
-	constraints[1].min_branch_distance =2;
-	
-	constraints[2].max_extensions = 3;	
-	constraints[2].min_extensions = 2;	
-	constraints[2].sections =6;		
-	constraints[2].steps =3;
-	constraints[2].max_radius =0.15;
-	constraints[2].min_radius =0.08;
-	constraints[2].max_length =0.4;
-	constraints[2].min_length =0.2;
-	constraints[2].max_total_length =3.0;
-	constraints[2].max_curvature =0.1;				
-	constraints[2].max_rough =0.0;
-	constraints[2].max_growth_length =0.4;
-	constraints[2].max_growth_radius =0.04;
-	constraints[2].min_branch_distance =1;
-	
-	constraints[3].max_extensions = 1;	
-	constraints[3].min_extensions = 1;	
-	constraints[3].sections =3;		
-	constraints[3].steps =3;
-	constraints[3].max_radius =0.08;
-	constraints[3].min_radius =0.05;
-	constraints[3].max_length =0.4;
-	constraints[3].min_length =0.2;
-	constraints[3].max_total_length =3.0;
-	constraints[3].max_curvature =0.05;				
-	constraints[3].max_rough =0.0;
-	constraints[3].max_growth_length =0.4;
-	constraints[3].max_growth_radius =0.04;
-	constraints[3].min_branch_distance =1;
+
+	max_level =0;
 	
 	m_up = glm::vec3( 0, 1, 0 );
 	m_wind_dir = glm::vec3( 1, 0, 0);
@@ -438,6 +384,22 @@ PTree::PTree( Object* parent ) : Actor( parent ) {
 }
 
 PTree::~PTree() {
+	reinitialize();
+	delete root;
+}
+
+void 
+PTree::setConstraint( int level, const Constraint& c ) {
+	//if( level > MAX_LEVEL )
+	//	return;
+	constraints[level] =c;
+}
+
+void 
+PTree::setBranchDepth( int maxlevel ) {
+	//if( maxlevel > MAX_LEVEL )
+	//	return;
+	max_level =maxlevel;
 }
 
 void 
@@ -473,6 +435,8 @@ PTree::geometry( int ) {
 
 void 
 PTree::update( float deltatime ) {
+	
+	if(! max_level ) return;
 
 	deltatime = glm::min( deltatime, 0.1f );
 	
@@ -570,7 +534,7 @@ PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatim
 			if( extension_count < c.min_branch_distance ) 
 				n->extension->branches =0;		
 		
-			float max_angle = ( M_PI / 4.0f ) * ( (float)(n->level + 1)/ (float)MAX_LEVEL );
+			float max_angle = ( M_PI / 4.0f ) * ( (float)(n->level + 1)/ (float)max_level );
 			float min_angle = max_angle * 0.8;
 			glm::vec3 axis = glm::cross( data(n).attribVector( PBranchSection::HEAD ) - n->curve, up );
 			axis = glm::rotate( axis, (float)glm::linearRand( 0.0, 2* M_PI ), up );
@@ -609,7 +573,7 @@ PTree::growRecursive( Node* parent, Node* n, int extension_count, float deltatim
 		data(n).setAttrib( PBranchSection::HEAD_RADIUS, 0.001f );
 	
 	if( data(n).data[ PBranchSection::HEAD_RADIUS ] > n->max_radius * 0.15
-		&& n->level != MAX_LEVEL -1
+		&& n->level != max_level-1
 		&& n->branches < n->max_branches ) {
 		
 		int b = n->branches++;

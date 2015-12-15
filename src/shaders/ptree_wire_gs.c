@@ -111,8 +111,8 @@ main() {
 			v2 = bezier2( t, base, curve, head );
 		}	
 				
-		emitAndMult( v1, vec3(1), vec2(0) );
-		emitAndMult( v2, vec3(1), vec2(0) );
+		emitAndMult( v1, vec3(0,0,1), vec2(0) );
+		emitAndMult( v2, vec3(0,0,1), vec2(0) );
 		
 		EndPrimitive();
 	}

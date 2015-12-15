@@ -1,3 +1,8 @@
+/*
+ * This file is part of Folia, an experimental mini-engine using OpenGL 3
+ * Created by Micky Faas. Freely usable and modifiable for academic purposes.
+ */
+
 #ifndef PTREE_H
 #define PTREE_H
 
@@ -140,8 +145,30 @@ class PTreeGeometry : public Geometry {
 
 class PTree : public Actor {
 	public:
+		/* Parameters to the algorithm */
+		class Constraint {
+			public:
+				int max_extensions;	
+				int min_extensions;
+				int sections;		
+				int steps;
+				int min_branch_distance;
+				float max_radius;
+				float min_radius;
+				float max_length;
+				float min_length;
+				float max_total_length;
+				float max_curvature;				
+				float max_rough;
+				float max_growth_length;
+				float max_growth_radius;
+		};
+		
 		PTree( Object* parent );
 		~PTree();
+		
+		void setConstraint( int level, const Constraint& c );
+		void setBranchDepth( int maxlevel );
 		
 		void setWireMode( bool );
 		void reinitialize();
@@ -160,23 +187,6 @@ class PTree : public Actor {
 			SEASON_SUMMER,
 			SEASON_AUTUMN,
 			SEASON_WINTER
-		};
-		class Constraint {
-			public:
-				int max_extensions;	
-				int min_extensions;
-				int sections;		
-				int steps;
-				int min_branch_distance;
-				float max_radius;
-				float min_radius;
-				float max_length;
-				float min_length;
-				float max_total_length;
-				float max_curvature;				
-				float max_rough;
-				float max_growth_length;
-				float max_growth_radius;
 		};
 		
 		class Leaf;
@@ -223,6 +233,7 @@ class PTree : public Actor {
 		PTreeGeometry geom;
 		Node *root;
 		Constraint constraints[MAX_LEVEL];
+		int max_level;
 		glm::vec3 m_up ;
 		glm::vec3 m_wind_dir;
 		float m_wind_freq_theta;

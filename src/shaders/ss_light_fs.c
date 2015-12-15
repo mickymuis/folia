@@ -1,10 +1,15 @@
+/*
+ * This file is part of Folia, an experimental mini-engine using OpenGL 3
+ * Created by Micky Faas. Freely usable and modifiable for academic purposes.
+ */
+
+
 #version 330 core
 
 #define NUM_SAMPLES 2
 #define MULTISAMPLE
 
 out vec4 fragColor;
-
 
 #ifdef MULTISAMPLE
 uniform sampler2DMS g_depth;
@@ -30,28 +35,6 @@ uniform mat4 mat_windowtoview;
 
 vec2 ndc_position;
 
-const float NEAR = 0.1; // projection matrix's near plane
-const float FAR = 1000.0f; // projection matrix's far plane
-float linearizeDepth(float depth)
-{
-    float z = depth * 2.0 - 1.0; // Back to NDC 
-    return (2.0 * NEAR * FAR) / (FAR + NEAR - z * (FAR - NEAR));	
-}
-
-vec3 positionFromDepth( int sample ) {
-
-	vec2 screenpos =ndc_position;
-	
-#ifdef MULTISAMPLE
-	float depth =texelFetch(g_depth, ivec2(gl_FragCoord.xy), sample ).r * 2.0 - 1.0;
-#else
-//	float depth =texture(g_depth, screenpos).r * 2.0 - 1.0;
-	float depth =linearizeDepth( texture(g_depth, ndc_position).r );
-#endif
-	vec4 pos = mat_windowtoview * vec4( screenpos * 2.0 - 1.0, depth, 1.0 );
-	return pos.xyz;
-}
-
 void main()
 {             
 
@@ -75,6 +58,7 @@ void main()
 	vec3 color =vec3(0);
 
 #ifdef MULTISAMPLE
+	/* For MS, we average over all the samples */
   for( int i=0; i < NUM_SAMPLES; i++ ) {
   
   	vec4 fragCoord =texelFetch( g_position, ivec2(gl_FragCoord.xy), i).rgba;
@@ -83,6 +67,8 @@ void main()
 		float f_specular = texelFetch( g_diffusespec, ivec2(gl_FragCoord.xy), i).a;
 #endif
 
+		/* Calculate the NDC from the stored fragCoord,
+			 then reconstruct the view-space position using the inverse projection matrix */
 		vec4 ndcPos;
 		ndcPos.xy = ((2.0 * fragCoord.xy) - (2.0 * vec2(0))) / (screensize) - 1;
 		ndcPos.z = (2.0 * fragCoord.z - gl_DepthRange.near - gl_DepthRange.far) /
@@ -119,6 +105,7 @@ void main()
 		
 		} else { // directional light
 
+			lighting  = f_diffuse * 0.1; // DELETE ME
 			vec3 lightDir = normalize(-light_direction);  
 			float diff = max(dot(f_normal, lightDir), 0.0);
 			diffuse = light_intensity * diff * f_diffuse;  
@@ -134,12 +121,11 @@ void main()
 		lighting += diffuse + specular;
 		
 #ifdef MULTISAMPLE
-		color += (1.0 / NUM_SAMPLES) * lighting;//texelFetch(g_depth, ivec2(gl_FragCoord.xy), i ).rgb;
+		color += (1.0 / NUM_SAMPLES) * lighting;
 	}
 #else
-	color =/*f_position;//*/lighting;
+	color =lighting;
 #endif
 		
-
 	fragColor = vec4(color, 1.0);
 }
