@@ -7,7 +7,7 @@
 #define WINDOW_H
 
 #define WINDOW_DEFAULT_WIDTH 1280
-#define WINDOW_DEFAULT_HEIGHT 1024
+#define WINDOW_DEFAULT_HEIGHT 720
 
 #include <cinttypes>
 #define GLM_SWIZZLE

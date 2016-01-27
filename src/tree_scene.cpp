@@ -20,6 +20,8 @@
 
 TreeScene::TreeScene( Zone* parent, Camera *c ) : Actor( parent), camera( c ) {
 
+  const int num_fireflies =5;
+  
 	setEventFilters( EVENT_KEYPRESS );
 	Application::app()->attachEventHandler( this );
 	wire =false;
@@ -49,11 +51,11 @@ TreeScene::TreeScene( Zone* parent, Camera *c ) : Actor( parent), camera( c ) {
 	halos->setProgram( src.createProgram() );
 	
 	
-	for( int i =0; i < 5; i++ ) {
+	for( int i =0; i < num_fireflies; i++ ) {
 
 		Light *l = new Light( parent );
 		//l->setIntensity( glm::sphericalRand( 0.5f ) + glm::vec3(0.5) );
-		l->setIntensity( glm::vec3(1.0f, 1.0f, 1.0f) );
+		l->setIntensity( glm::vec3(5.0f / num_fireflies ) );
 		l->setDirection( glm::vec3(0) );
 		l->setType( Light::LIGHT_POINT );
 		l->setAttenuation( 0.09, 0.042 );
@@ -74,6 +76,7 @@ TreeScene::TreeScene( Zone* parent, Camera *c ) : Actor( parent), camera( c ) {
 	}
 	
 	up = glm::vec3(0,1,0);
+	theta =.0f;
 	update( 1.0f );
 	
 }
